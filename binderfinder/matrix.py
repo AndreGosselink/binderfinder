@@ -8,11 +8,15 @@ import os
 
 class Matrix(object):
 
-    def __init__(self, filename, reference=[], annotate='none', stats=False):
+    def __init__(self, filename, reference=[], annotate='none', stats=False, sort='none'):
         if not annotate in ('none', 'data', 'all'):
             raise ValueError("annotate must be 'none', 'data' or 'all'")
 
-        self._annotateflag = annotate != 'none'
+        if not sort in ('none', 'row', 'col', 'both'):
+            raise ValueError("sort must be 'none', 'row', 'col' or 'both'")
+
+        self._annotateflag = annotate
+        self._sortflag = sort
         self._statsflag = stats
         self._doneflag = False
 
@@ -34,8 +38,8 @@ class Matrix(object):
             self._matrix = np.zeros((self.types, self.subtypes, 3))
         
         if annotate == 'all':
-            self.typnames += ['c_mean']
-            self.subnames += ['r_mean']
+            self.typnames += ['stats']
+            self.subnames += ['stats']
 
         self.filename = filename
 
@@ -60,16 +64,6 @@ class Matrix(object):
             for j, tn in enumerate(self.typnames):
                 c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
                 self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
-
-    def _calc_stats(self):
-        for c in xrange(self.subtypes):
-            col = self._matrix[:-1,c,:].squeeze()
-            self._matrix[-1,c] = stats_calculation(col)
-
-        for r in xrange(self.types):
-            row = self._matrix[r,:-1,:].squeeze()
-            self._matrix[r,-1] = stats_calculation(row)
-
 
     def _plotit(self):
         self.fig, self.ax = plt.subplots(1)
@@ -118,17 +112,54 @@ class Matrix(object):
                 if i%self.subtypes == self.subtypes-1:
                     df.write('\n')
 
+    def _calc_stats(self):
+        for c in xrange(self.subtypes):
+            col = self._matrix[:-1,c,:].squeeze()
+            self._matrix[-1,c] = stats_calculation(col)
+
+        for r in xrange(self.types):
+            row = self._matrix[r,:-1,:].squeeze()
+            self._matrix[r,-1] = stats_calculation(row)
+
+    def _sort_matrix(self):
+        new_matrix = self._matrix.copy()
+
+        if self._sortflag in ('both', 'col'):
+            new_subnames = []
+            for n, i in enumerate(np.argsort(np.mean(self._matrix[-1,:-1], 1))):
+                new_matrix[:,n] = self._matrix[:,i]
+                new_subnames.append(self.subnames[i])
+            self.subnames = new_subnames
+            if self._annotateflag == 'all':
+                self.subnames += ['stats']
+
+        if self._sortflag in ('both', 'row'):
+            new_typnames = []
+            for n, i in enumerate(np.argsort(np.mean(self._matrix[:-1,-1], 1))):
+                new_matrix[n,:] = self._matrix[i,:]
+                new_typnames.append(self.typnames[i])
+            self.typnames = new_typnames
+            if self._annotateflag == 'all':
+                self.typnames += ['stats']
+
+        self._matrix = new_matrix
+
     def run(self, show=False):
         self._evaluate()
         self._normalise()
-        self._plotit()
-
-        if self._annotateflag:
-            self._annotate()
 
         if self._statsflag:
             self._calc_stats()
+
+        if self._sortflag != 'none':
+            self._sort_matrix()
         
+        self._plotit()
+
+        if self._annotateflag != 'none':
+            self._annotate()
+
+
         self._doneflag = True
 
         if show:
