@@ -1,19 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from dataparser import parse_csv
-from evaluate import evaluate, sums_calculation
+from evaluate import evaluate, stats_calculation
 import warnings
 import os
 
 
 class Matrix(object):
 
-    def __init__(self, filename, reference=[], anotate='none', sums=False):
-        if not anotate in ('none', 'data', 'all'):
+    def __init__(self, filename, reference=[], annotate='none', stats=False):
+        if not annotate in ('none', 'data', 'all'):
             raise ValueError("annotate must be 'none', 'data' or 'all'")
 
-        self._anotateflag = anotate != 'none'
-        self._sumsflag = sums
+        self._annotateflag = annotate != 'none'
+        self._statsflag = stats
         self._doneflag = False
 
         self.typnames, self.subnames, self.data = parse_csv(filename)
@@ -28,12 +28,12 @@ class Matrix(object):
         self._dat_eu = None
         self._dat_th = None
 
-        if self._sumsflag:
+        if self._statsflag:
             self._matrix = np.zeros((self.types+1, self.subtypes+1, 3))
         else:
             self._matrix = np.zeros((self.types, self.subtypes, 3))
         
-        if anotate == 'all':
+        if annotate == 'all':
             self.typnames += ['c_mean']
             self.subnames += ['r_mean']
 
@@ -61,14 +61,14 @@ class Matrix(object):
                 c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
                 self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
 
-    def _calc_sums(self):
+    def _calc_stats(self):
         for c in xrange(self.subtypes):
             col = self._matrix[:-1,c,:].squeeze()
-            self._matrix[-1,c] = sums_calculation(col)
+            self._matrix[-1,c] = stats_calculation(col)
 
         for r in xrange(self.types):
             row = self._matrix[r,:-1,:].squeeze()
-            self._matrix[r,-1] = sums_calculation(row)
+            self._matrix[r,-1] = stats_calculation(row)
 
 
     def _plotit(self):
@@ -123,11 +123,11 @@ class Matrix(object):
         self._normalise()
         self._plotit()
 
-        if self._anotateflag:
+        if self._annotateflag:
             self._annotate()
 
-        if self._sumsflag:
-            self._calc_sums()
+        if self._statsflag:
+            self._calc_stats()
         
         self._doneflag = True
 
