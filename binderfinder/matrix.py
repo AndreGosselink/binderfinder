@@ -8,16 +8,27 @@ import os
 
 class Matrix(object):
 
-    def __init__(self, filename, reference=[], annotate='none', stats=False, sort='none'):
+    def __init__(self, filename, reference=[], annotate='none', stats=False, sort='none', legend='', ceil=False, normalize='total'):
         if not annotate in ('none', 'data', 'all'):
             raise ValueError("annotate must be 'none', 'data' or 'all'")
 
         if not sort in ('none', 'row', 'col', 'both'):
             raise ValueError("sort must be 'none', 'row', 'col' or 'both'")
-
+        
+        if len(legend) != 0 and len(legend) != 2:
+            raise ValueError("legend must be empty string of any combination of two 'r', 'g' and 'b'")
+        else:
+            if sum(['r' in legend, 'g' in legend, 'b' in legend]) < 2:
+                raise ValueError("legend must only have 'r', 'g' or 'b'")
+        if not normalize in ('total', 'channels'):
+                raise ValueError("normalize must be 'total' or 'channels'")
+        
+        self._normalizeflag = normalize
         self._annotateflag = annotate
         self._sortflag = sort
         self._statsflag = stats
+        self._legendflag = legend.lower()
+        self._ceilflag = ceil
         self._doneflag = False
 
         self.typnames, self.subnames, self.data = parse_csv(filename)
@@ -56,17 +67,59 @@ class Matrix(object):
                 raise ValueError('Evaluation function can not negative color value!')
             self._matrix[i/self.subtypes, i%self.subtypes] = [r, g, b]
 
-    def _normalise(self):
-        self._matrix /= np.max(self._matrix)
+    def _normalize(self):
+        if self._normalizeflag == 'total':
+            self._matrix /= np.max(self._matrix)
+        else:
+            for i in xrange(3):
+                max_val = np.max(self._matrix[:,:,i])
+                if max_val == 0:
+                    continue
+                self._matrix[:,:,i] /= max_val
+
+        if self._ceilflag:
+            self._matrix *= 10
+            self._matrix = np.ceil(self._matrix)
+            self._matrix /= 10
 
     def _annotate(self):
+        # if self._debug:
+        #     for i, sn in enumerate(self.subnames):
+        #         for j, tn in enumerate(self.typnames):
+        #             c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
+        #             self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
+
         for i, sn in enumerate(self.subnames):
             for j, tn in enumerate(self.typnames):
                 c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
-                self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
+                ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
+                self.ax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
+                self.ax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
+
+    def _plot_legend(self):
+        axis = np.linspace(0.1, 1.0, 10)
+        names = [str(v) for v in axis]
+        leg_matrix = np.zeros((10, 10, 3))
+        grid = np.meshgrid(axis, axis)
+        for lc, g in zip(self._legendflag, grid):
+            i = 'rgb'.index(lc)
+            leg_matrix[:,:,i] = g
+        self.leg.set_xlabel(self._legendflag[0].upper())
+        self.leg.set_ylabel(self._legendflag[1].upper())
+        self.leg.imshow(leg_matrix, interpolation='none')
+        self.leg.set_xticks(range(10))
+        self.leg.set_xticklabels(names)
+        self.leg.xaxis.tick_top()
+        self.leg.set_yticks(range(10))
+        self.leg.set_yticklabels(names)
 
     def _plotit(self):
-        self.fig, self.ax = plt.subplots(1)
+        if not self._legendflag:
+            self.fig, self.ax = plt.subplots(1)
+        else:
+            self.fig, (self.ax, self.leg) = plt.subplots(1, 2)
+            self._plot_legend()
+
         self.ax.imshow(self._matrix, interpolation='none')
 
         self.ax.set_xticks(range(len(self.subnames)))
@@ -146,7 +199,7 @@ class Matrix(object):
 
     def run(self, show=False):
         self._evaluate()
-        self._normalise()
+        self._normalize()
 
         if self._statsflag:
             self._calc_stats()
