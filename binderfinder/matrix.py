@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from dataparser import parse_csv
-from evaluate import evaluate, stats_calculation
+from evaluate import evaluate, stats_calculation, sort_reduction
 import warnings
 import os
 from eventhandler import EventHandler
@@ -262,7 +262,7 @@ as described.
         new_matrix = self._matrix.copy()
         new_subnames = []
 
-        for n, i in enumerate(np.argsort(np.mean(self._matrix[colidx,:-1], 1))):
+        for n, i in enumerate(np.argsort(sort_reduction(self._matrix[colidx,:-1].squeeze()))):
             new_matrix[:,n] = self._matrix[:,i]
             new_subnames.append(self.subnames[i])
 
@@ -275,7 +275,7 @@ as described.
         new_matrix = self._matrix.copy()
         new_typnames = []
 
-        for n, i in enumerate(np.argsort(np.mean(self._matrix[:-1,rowidx], 1))):
+        for n, i in enumerate(np.argsort(sort_reduction(self._matrix[:-1,rowidx].squeeze()))):
             new_matrix[n,:] = self._matrix[i,:]
             new_typnames.append(self.typnames[i])
 

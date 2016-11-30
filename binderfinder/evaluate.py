@@ -53,3 +53,12 @@ def stats_calculation(datapoints):
                 3 are the rgb values
     """
     return np.sum(datapoints, 0) / len(datapoints)
+
+
+def sort_reduction(datapoints):
+    """
+    datapoints: reduces an rgb colour to a scalar value
+                wicht then is used to order the data in
+                a sort
+    """
+    return datapoints[:,1]

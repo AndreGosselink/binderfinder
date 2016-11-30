@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class EventHandler(object):
+
     def __init__(self, fig, other):
         self.motion = fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.press = fig.canvas.mpl_connect('button_press_event', self.on_click)
@@ -38,8 +39,9 @@ class EventHandler(object):
         elif self.other._sortflag == 'col':
             self.other._sort_col(col)
         elif self.other._sortflag == 'both':
-            self.other._sort_row(row)
-            self.other._sort_col(col)
+            for i in xrange(3):
+                self.other._sort_row(row)
+                self.other._sort_col(col)
         elif self.other._sortflag == 'none':
             self.other._sortflag = 'row'
             return self.on_click(event)
