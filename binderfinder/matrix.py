@@ -67,7 +67,7 @@ as described.
             annotate='none', stats=False, sort='none', legend='',
             ceil=False, normalize='total'):
 
-        print 'binderfinder 0.91 revision XX\n' # revision mark
+        print "binderfinder v0.91 rev 6+\n" # revision mark
         
         # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
