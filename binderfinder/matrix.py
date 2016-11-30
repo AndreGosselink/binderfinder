@@ -66,6 +66,8 @@ as described.
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
             ceil=False, normalize='total'):
+
+        print 'binderfinder 0.91 revision XX\n' # revision mark
         
         # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
