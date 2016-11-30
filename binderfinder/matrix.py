@@ -4,25 +4,92 @@ from dataparser import parse_csv
 from evaluate import evaluate, stats_calculation
 import warnings
 import os
-
+from eventhandler import EventHandler
+from matplotlib.widgets import RadioButtons
 
 class Matrix(object):
+    """
+Input:
+------------------------
+ filename: path to csv file, containing parsable data
 
-    def __init__(self, filename, reference=[], annotate='none', stats=False, sort='none', legend='', ceil=False, normalize='total'):
+reference: refernce values as iterable which are passed to the evaluate
+           function (default=[0.0, 0.0])
+
+   weight: weights as iterable which are passed to the evaluate function
+           (default=[1.0, 1.0])
+
+ annotate: specifies how the matrix is labled. If 'none' the tiles in the
+           matrix aren't labels at all, if 'data' only the tile representing
+           data are labeled and if 'all' the data and statistics tiles are
+           labeld. The labels show the used RGB values per row and per
+           col (default='none').
+
+    stats: Show per row/col statistics. The calculations are defined in
+           elvaluate.py/stats_calculation() (default=False).
+
+     sort: Defines the sorting behaviour. Can be sorted by 'row', 'col' or
+           'both' or can be not sorted at all with 'none'. In order for
+           sorting to work, stats needs to be True (default='none').
+
+   legend: Defines the legend behaviour. Needs to be a string of two chars,
+           the chars need to be 'r', 'g' or 'b'. The first char defines the
+           color plotted along the x-axis, the second char defines the
+           color along the y-axis (default='bg').
+
+     ceil: Round the values for the matrix. The scalar data is categorized
+           in decades, changing the readout to 0-10 %, 11-20 %, 21-30 %,
+           and so on. Reduces the dynamic range and as a leads to a loss
+           of information but increase of comparability.
+
+normalize: normalizes the data prior the representation. if 'total' all
+           channels are normalized by the overal, maximum value in the
+           matrix. If 'channels', each channel is normalized the maximum
+           value in the respective channel.
+
+Evaluates a csv file containing arbitary values measured for any given
+combination of up to two subtypes. The csv file needs to have the following
+layout:
+    
+    type;subtype;val0;val1
+    A;x;v0_Ax;v1_Ax
+    A;y;v0_Ay;v1_Ay
+    B;x;v0_Bx;v1_Bx
+    B;y;v0_By;v1_By
+
+where A and B are the maintypes, x and y are the subtypes with the respective
+measured valus v0 and v1 for each kombination of A, B and x, y. Of course
+subtype and maintype are interchangeable, as long as the data is formated
+as described.
+    """
+
+    def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
+            annotate='none', stats=False, sort='none', legend='',
+            ceil=False, normalize='total'):
+        
+        # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
             raise ValueError("annotate must be 'none', 'data' or 'all'")
 
         if not sort in ('none', 'row', 'col', 'both'):
             raise ValueError("sort must be 'none', 'row', 'col' or 'both'")
-        
-        if len(legend) != 0 and len(legend) != 2:
-            raise ValueError("legend must be empty string of any combination of two 'r', 'g' and 'b'")
         else:
+            if not stats:
+                raise ValueError("stats must be True for sorting. Please restart and use 'Matrix(..., stats=True, ...)' in the main script")
+        
+        if len(legend) != 2:
+            raise ValueError("legend must be string of any combination of two out of 'r', 'g' and 'b'")
+        elif len(legend) == 2:
             if sum(['r' in legend, 'g' in legend, 'b' in legend]) < 2:
                 raise ValueError("legend must only have 'r', 'g' or 'b'")
+
         if not normalize in ('total', 'channels'):
                 raise ValueError("normalize must be 'total' or 'channels'")
+
+        if not ceil and legend != '':
+            warnings.warn('with ceil=False the legend my not reflect all the colours shown. The mouseover will reference the data as if ceil was True!')
         
+        # set flags
         self._normalizeflag = normalize
         self._annotateflag = annotate
         self._sortflag = sort
@@ -30,42 +97,48 @@ class Matrix(object):
         self._legendflag = legend.lower()
         self._ceilflag = ceil
         self._doneflag = False
+        self._weights = np.array(weights, float)
 
+        # parse file remember the filename of the parsed file
         self.typnames, self.subnames, self.data = parse_csv(filename)
-
+        self.filename = filename
+        # set reference value
         self.ref = np.asarray(reference, float)
-
+        # derive properties
         self.types = len(self.typnames)
         self.subtypes = len(self.subnames)
-
-        self._matrix = None
+        # dummies for calculations
         self._dat_sc = None
         self._dat_eu = None
         self._dat_th = None
-
+        # set datacontainer for matrix 
         if self._statsflag:
             self._matrix = np.zeros((self.types+1, self.subtypes+1, 3))
         else:
             self._matrix = np.zeros((self.types, self.subtypes, 3))
-        
+        # add label for the stats row/cols according to parameter 
         if annotate == 'all':
             self.typnames += ['stats']
             self.subnames += ['stats']
 
-        self.filename = filename
-
     def __str__(self):
+        """
+        Retrun so,e basic info
+        """
         return '{} types with {} subtypes in {} datapoints'.format(self.types, self.subtypes, len(self.data))
     
     def _evaluate(self):
         a_ref, c_ref = self.ref
         self.antigen = self.data[:,:1].squeeze()
         self.carexpr = self.data[:,1:2].squeeze()
+        w_a, w_c = self._weights
+        ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
         for i, (a, c) in enumerate(zip(self.antigen, self.carexpr)):
-            r, g, b = evaluate(a, c, a_ref, c_ref)
-            if any(map(lambda x: x < 0, (r, g, b))):
+            rgb = evaluate(a * w_a, c * w_c, a_ref * w_a, c_ref * w_c)
+            if any(map(lambda x: x < 0, rgb)):
                 raise ValueError('Evaluation function can not negative color value!')
-            self._matrix[i/self.subtypes, i%self.subtypes] = [r, g, b]
+            self._matrix[i/self.subtypes, i%self.subtypes][ci0] = rgb[ci0] 
+            self._matrix[i/self.subtypes, i%self.subtypes][ci1] = rgb[ci1] 
 
     def _normalize(self):
         if self._normalizeflag == 'total':
@@ -112,15 +185,22 @@ class Matrix(object):
         self.leg.xaxis.tick_top()
         self.leg.set_yticks(range(10))
         self.leg.set_yticklabels(names)
+        self._legpatch, = self.leg.plot([],[], lw=2, c='r')   
 
     def _plotit(self):
         if not self._legendflag:
             self.fig, self.ax = plt.subplots(1)
         else:
-            self.fig, (self.ax, self.leg) = plt.subplots(1, 2)
+            self.ax = plt.subplot2grid(      (5, 4), (0, 0), rowspan=5, colspan=2)
+            self.leg = plt.subplot2grid(     (5, 4), (0, 2), rowspan=3, colspan=2)
+            self.cont_dir = plt.subplot2grid((5, 4), (-1, 2))
+            self.cont_dir.set_title('sort on click by')
+            # self.cont_rgb = plt.subplot2grid((5, 2), (-2, 1))
+            self.fig = self.ax.figure
+            self.fig.tight_layout()
             self._plot_legend()
 
-        self.ax.imshow(self._matrix, interpolation='none')
+        self._img = self.ax.imshow(self._matrix, interpolation='none')
 
         self.ax.set_xticks(range(len(self.subnames)))
         self.ax.set_xticklabels(self.subnames)
@@ -128,6 +208,10 @@ class Matrix(object):
 
         self.ax.set_yticks(range(len(self.typnames)))
         self.ax.set_yticklabels(self.typnames)
+
+        # self._check_color = RadioButtons(self.cont_rgb, ('R', 'G', 'B', 'mean'), (False, False, True))
+        self._check_dir = RadioButtons(self.cont_dir, ('row', 'col', 'both'))
+        self._event_handler = EventHandler(self.fig, self)
 
     def save_last_run(self):
 
@@ -174,28 +258,40 @@ class Matrix(object):
             row = self._matrix[r,:-1,:].squeeze()
             self._matrix[r,-1] = stats_calculation(row)
 
-    def _sort_matrix(self):
+    def _sort_row(self, colidx):
         new_matrix = self._matrix.copy()
+        new_subnames = []
 
-        if self._sortflag in ('both', 'col'):
-            new_subnames = []
-            for n, i in enumerate(np.argsort(np.mean(self._matrix[-1,:-1], 1))):
-                new_matrix[:,n] = self._matrix[:,i]
-                new_subnames.append(self.subnames[i])
-            self.subnames = new_subnames
-            if self._annotateflag == 'all':
-                self.subnames += ['stats']
-
-        if self._sortflag in ('both', 'row'):
-            new_typnames = []
-            for n, i in enumerate(np.argsort(np.mean(self._matrix[:-1,-1], 1))):
-                new_matrix[n,:] = self._matrix[i,:]
-                new_typnames.append(self.typnames[i])
-            self.typnames = new_typnames
-            if self._annotateflag == 'all':
-                self.typnames += ['stats']
+        for n, i in enumerate(np.argsort(np.mean(self._matrix[colidx,:-1], 1))):
+            new_matrix[:,n] = self._matrix[:,i]
+            new_subnames.append(self.subnames[i])
 
         self._matrix = new_matrix
+        self.subnames = new_subnames
+        if self._annotateflag == 'all':
+            self.subnames += ['stats']
+
+    def _sort_col(self, rowidx):
+        new_matrix = self._matrix.copy()
+        new_typnames = []
+
+        for n, i in enumerate(np.argsort(np.mean(self._matrix[:-1,rowidx], 1))):
+            new_matrix[n,:] = self._matrix[i,:]
+            new_typnames.append(self.typnames[i])
+
+        self._matrix = new_matrix
+        self.typnames = new_typnames
+        if self._annotateflag == 'all':
+            self.typnames += ['stats']
+
+    def _sort_matrix(self):
+        
+        if self._sortflag in ('both', 'col'):
+            for step in xrange(3):
+                self._sort_col(-1)
+
+            if self._sortflag in ('both', 'row'):
+                self._sort_row(-1)
 
     def run(self, show=False):
         self._evaluate()
@@ -211,7 +307,6 @@ class Matrix(object):
 
         if self._annotateflag != 'none':
             self._annotate()
-
 
         self._doneflag = True
 
