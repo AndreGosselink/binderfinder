@@ -1,9 +1,10 @@
-from binderfinder import Matrix
+import subprocess as sub
+import sys
 
-# help(Matrix)
-m = Matrix('./data/mock_data_rnd.csv', reference=[100, 100], weights=[0.05, 1],
-        annotate='none', stats=True, sort='none', legend='bg', ceil=True,
-        normalize='channels')
+print "starting binderfinder v0.91 rev 8+\n" # revision mark
 
-m.show_me_where_the_white_rabbit_goes()
-m.save_last_run()
+p = sub.Popen(['pythonw', 'main.py'])
+
+print 'started with pid', p.pid
+
+sys.exit(p.wait())
