@@ -1,2 +1,2 @@
 syntax: regexp
-^.*\.(png|pyc)$
+^.*\.(png|pyc|swp|txt)$
