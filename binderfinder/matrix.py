@@ -1,5 +1,6 @@
 import matplotlib
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
+matplotlib.use('macosx')
 
 import numpy as np
 import matplotlib.pyplot as plt
