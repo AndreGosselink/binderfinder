@@ -3,13 +3,25 @@ import matplotlib.pyplot as plt
 
 class EventHandler(object):
 
-    def __init__(self, fig, other):
+    def __init__(self, fig, other, debug=False):
         self.motion = fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.press = fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.other = other
         self.other._check_dir.on_clicked(self.update_dir)
         self.other._sortflag = 'none'
+        self._debugflag = debug
+        if debug == True:
+            self._logfile = open('logfile.txt', 'w')
 
+    def catch(f, *args, **kwargs):
+        def _logged(self, event):
+            if self._debugflag:
+                self._logfile.write(str(event) + '\n')
+                self._logfile.flush()
+                return f(self, event)
+        return _logged
+
+    @catch
     def on_motion(self, event):
         if event.inaxes != self.other.ax:
             try:
@@ -29,6 +41,7 @@ class EventHandler(object):
         self.other._legpatch.set_ydata([y-1.5, y-1.5, y-0.5, y-0.5, y-1.5])
         self.other._legpatch.figure.canvas.draw()
 
+    @catch
     def on_click(self, event):
         if event.inaxes != self.other.ax:
             return

@@ -65,7 +65,7 @@ as described.
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
-            ceil=False, normalize='total'):
+            ceil=False, normalize='total', debug=False):
 
         # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
@@ -98,6 +98,7 @@ as described.
         self._ceilflag = ceil
         self._doneflag = False
         self._weights = np.array(weights, float)
+        self._debugflag = debug
 
         # parse file remember the filename of the parsed file
         self.typnames, self.subnames, self.data = parse_csv(filename)
@@ -211,7 +212,7 @@ as described.
 
         # self._check_color = RadioButtons(self.cont_rgb, ('R', 'G', 'B', 'mean'), (False, False, True))
         self._check_dir = RadioButtons(self.cont_dir, ('row', 'col', 'both'))
-        self._event_handler = EventHandler(self.fig, self)
+        self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
     def save_last_run(self):
 
