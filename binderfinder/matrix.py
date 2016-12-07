@@ -1,6 +1,7 @@
 import matplotlib
-# matplotlib.use('TkAgg')
-matplotlib.use('macosx')
+
+matplotlib.use('TkAgg')
+# matplotlib.use('macosx')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -161,18 +162,21 @@ as described.
             self._matrix /= 10
 
     def _annotate(self):
-        # if self._debug:
-        #     for i, sn in enumerate(self.subnames):
-        #         for j, tn in enumerate(self.typnames):
-        #             c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
-        #             self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
+        if self._debugflag:
+            self.cont_dir.text(0, 0, 'DEBUG', c='r')
+            for i, sn in enumerate(self.subnames):
+                for j, tn in enumerate(self.typnames):
+                    c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
+                    self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
 
-        for i, sn in enumerate(self.subnames):
-            for j, tn in enumerate(self.typnames):
-                c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
-                ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
-                self.ax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
-                self.ax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
+        if self._annotateflag != 'none':
+
+            for i, sn in enumerate(self.subnames):
+                for j, tn in enumerate(self.typnames):
+                    c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
+                    ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
+                    self.ax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
+                    self.ax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
 
     def _plot_legend(self):
         axis = np.linspace(0.1, 1.0, 10)
@@ -310,8 +314,7 @@ as described.
         
         self._plotit()
 
-        if self._annotateflag != 'none':
-            self._annotate()
+        self._annotate()
 
         self._doneflag = True
 
