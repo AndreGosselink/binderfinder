@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 class EventHandler(object):
@@ -12,13 +13,16 @@ class EventHandler(object):
         self._debugflag = debug
         if debug == True:
             self._logfile = open('logfile.txt', 'w')
+            self._logfile.write(str(os.name) + '\n\n')
+            self._logfile.flush()
 
     def catch(f, *args, **kwargs):
         def _logged(self, event):
             if self._debugflag:
                 self._logfile.write(str(event) + '\n')
                 self._logfile.flush()
-                return f(self, event)
+            return f(self, event)
+
         return _logged
 
     @catch

@@ -1,15 +1,19 @@
 import matplotlib
-# matplotlib.use('TkAgg')
-matplotlib.use('macosx')
+import sys
+import os
+
+if os.name != 'nt' or sys.platform != 'win32':
+    print 'falling back to TkAgg'
+    matplotlib.use('TkAgg')
 
 import numpy as np
 import matplotlib.pyplot as plt
 from dataparser import parse_csv
 from evaluate import evaluate, stats_calculation, sort_reduction
 import warnings
-import os
 from eventhandler import EventHandler
 from matplotlib.widgets import RadioButtons
+
 
 class Matrix(object):
     """
