@@ -75,7 +75,7 @@ as described.
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
-            ceil=False, normalize='total', debug=False):
+            ceil=False, normalize='total', debug=False, cmap='grey'):
 
         # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
@@ -98,7 +98,7 @@ as described.
 
         if not ceil and legend != '':
             warnings.warn('with ceil=False the legend my not reflect all the colours shown. The mouseover will reference the data as if ceil was True!')
-        
+
         # set flags
         self._normalizeflag = normalize
         self._annotateflag = annotate
@@ -131,6 +131,8 @@ as described.
         if annotate == 'all':
             self.typnames += ['stats']
             self.subnames += ['stats']
+        # cmap
+        self._heatmap_color = cmap
 
     def __str__(self):
         """
@@ -252,7 +254,7 @@ as described.
 
         self._matimg = self._matax.imshow(self._matrix, interpolation='none')
         self._heatimg = self._heatax.imshow(np.zeros(self._matrix.shape[:2]),
-                                            interpolation='none', vmin=0, vmax=1, cmap='gray')
+                                            interpolation='none', vmin=0, vmax=1, cmap=self._heatmap_color)
         self._update_matrixdata()
 
         self._set_ticks(self.subnames, self.typnames)

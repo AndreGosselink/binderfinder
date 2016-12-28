@@ -18,6 +18,7 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
                  'ceil': True,
             'normalize': 'channels',
                 'debug': False,
+                 'cmap': 'hot',
            }
 
 if not '-noconsole' in sys.argv:
