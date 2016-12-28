@@ -1,6 +1,7 @@
 import matplotlib
 import sys
 import os
+from . import __version__
 
 if os.name != 'nt' or sys.platform != 'win32':
     print 'falling back to TkAgg'
@@ -13,6 +14,7 @@ from evaluate import evaluate, stats_calculation, sort_reduction
 import warnings
 from eventhandler import EventHandler
 from matplotlib.widgets import RadioButtons
+import matplotlib.gridspec as gridspec
 
 
 class Matrix(object):
@@ -132,7 +134,7 @@ as described.
 
     def __str__(self):
         """
-        Retrun so,e basic info
+        Retrun some basic info
         """
         return '{} types with {} subtypes in {} datapoints'.format(self.types, self.subtypes, len(self.data))
     
@@ -170,7 +172,7 @@ as described.
             for i, sn in enumerate(self.subnames):
                 for j, tn in enumerate(self.typnames):
                     c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
-                    self.ax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
+                    self._matax.text(i-0.25, j+0.1, '{} {}'.format(tn, sn), color=c)
 
         if self._annotateflag != 'none':
 
@@ -178,8 +180,8 @@ as described.
                 for j, tn in enumerate(self.typnames):
                     c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
                     ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
-                    self.ax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
-                    self.ax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
+                    self._matax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
+                    self._matax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
 
     def _plot_legend(self):
         axis = np.linspace(0.1, 1.0, 10)
@@ -189,44 +191,71 @@ as described.
         for lc, g in zip(self._legendflag, grid):
             i = 'rgb'.index(lc)
             leg_matrix[:,:,i] = g
-        self.leg.set_xlabel(self._legendflag[0].upper())
-        self.leg.set_ylabel(self._legendflag[1].upper())
-        self.leg.imshow(leg_matrix, interpolation='none')
-        self.leg.set_xticks(range(10))
-        self.leg.set_xticklabels(names)
-        self.leg.xaxis.tick_top()
-        self.leg.set_yticks(range(10))
-        self.leg.set_yticklabels(names)
-        self._legpatch, = self.leg.plot([],[], lw=2, c='r')   
+        self._legax.set_xlabel(self._legendflag[0].upper())
+        self._legax.set_ylabel(self._legendflag[1].upper())
+        self._legax.imshow(leg_matrix, interpolation='none')
+        self._legax.set_xticks(range(10))
+        self._legax.set_xticklabels(names)
+        self._legax.xaxis.tick_top()
+        self._legax.set_yticks(range(10))
+        self._legax.set_yticklabels(names)
+        self._legpatch, = self._legax.plot([],[], lw=2, c='r')   
+
+    def _set_ticks(self, xticks, yticks):
+        for ax in (self._matax, self._heatax):
+            ax.set_xticks(range(len(xticks)))
+            ax.set_xticklabels(xticks)
+            ax.xaxis.tick_top()
+            ax.set_yticks(range(len(yticks)))
+            ax.set_yticklabels(yticks)
 
     def _plotit(self):
+        rows = 5
+        cols = 6
         if not self._legendflag:
-            self.fig, self.ax = plt.subplots(1)
+            self.fig, (self._heatax, self._matax) = plt.subplots(1, 2)
         else:
-            self.ax = plt.subplot2grid(      (5, 4), (0, 0), rowspan=5, colspan=2)
-            self.leg = plt.subplot2grid(     (5, 4), (0, 2), rowspan=3, colspan=2)
-            self.cont_dir = plt.subplot2grid((5, 4), (-1, 2))
+            gs = gridspec.GridSpec(rows, cols)
+
+            # self._matax = plt.subplot2grid(   (rows, cols), ( 0, 0), rowspan=rows, colspan=2)
+            # self._heatax = plt.subplot2grid(  (rows, cols), ( 0, 4), rowspan=rows, colspan=2)
+            # self._legax = plt.subplot2grid(   (rows, cols), ( 0, 2), rowspan=3, colspan=2)
+            # self.cont_dir = plt.subplot2grid( (rows, cols), ( 3, 2), colspan=2)
+
+            self._matax   = plt.subplot(gs[ :,  :2])
+            self._heatax  = plt.subplot(gs[ :, 4:])
+            self._legax   = plt.subplot(gs[ :3, 2:4])
+            self.cont_dir = plt.subplot(gs[ -1,  2])
+
             self.cont_dir.set_title('sort on click by')
-            # self.cont_rgb = plt.subplot2grid((5, 2), (-2, 1))
-            self.fig = self.ax.figure
-            self.fig.tight_layout()
             self._plot_legend()
+            self._matpatches = []
+            self.fig = self._matax.figure
+            self.fig.tight_layout()
+            self.fig.canvas.set_window_title('binderfinder ' + __version__)
 
-        self._img = self.ax.imshow(self._matrix, interpolation='none')
+        self._matimg = self._matax.imshow(self._matrix, interpolation='none')
+        self._heatimg = self._heatax.imshow(np.zeros(self._matrix.shape[:2]),
+                                            interpolation='none', vmin=0, vmax=1, cmap='gray')
+        self._update_matrixdata()
 
-        self.ax.set_xticks(range(len(self.subnames)))
-        self.ax.set_xticklabels(self.subnames)
-        self.ax.xaxis.tick_top()
-
-        self.ax.set_yticks(range(len(self.typnames)))
-        self.ax.set_yticklabels(self.typnames)
+        self._set_ticks(self.subnames, self.typnames)
 
         # self._check_color = RadioButtons(self.cont_rgb, ('R', 'G', 'B', 'mean'), (False, False, True))
         self._check_dir = RadioButtons(self.cont_dir, ('row', 'col', 'both'))
         self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
-    def save_last_run(self):
+    def _get_heat(self):
+        heat = np.asarray([[0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2] for rgb in row] for row in self._matrix])
+        return heat / np.max(heat)
 
+    def _update_matrixdata(self):
+        self._matimg.set_data(self._matrix)
+        self._heatimg.set_data(self._get_heat())
+        self._set_ticks(self.subnames, self.typnames)
+        self.fig.canvas.draw()
+
+    def save_last_run(self):
         if not self._doneflag:
             warnings.warn('run() was not called before. Next time please call run() first (and double check the output)')
             self.run()
