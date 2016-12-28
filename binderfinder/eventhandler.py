@@ -40,10 +40,10 @@ class EventHandler(object):
         
         to_draw = []
         i0, i1 = ['rgb'.index(lc) for lc in self.other._legendflag]
-        for i, row in enumerate(self.other._matrix):
-            for j, rgb in enumerate(row):
-                if rgb[i0] == rval and rgb[i1] == cval:
-                    to_draw.append((j+1, i+1))
+        for j, row in enumerate(self.other._matrix):
+            for i, rgb in enumerate(row):
+                if rgb[i0] == cval and rgb[i1] == rval:
+                    to_draw.append((i+1, j+1))
         
         while len(to_draw) > len(self.other._matpatches):
             self.other._matpatches.append(self.other._matax.plot([], [], c='r', lw=2) +
