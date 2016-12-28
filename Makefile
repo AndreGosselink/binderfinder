@@ -1,4 +1,4 @@
-REVISION = $(shell hg identify --num)
+REVISION = $(shell hg identify -r tip -n)
 
 all:
 	sed -i -- 's/rev.*\" # revision mark/rev $(REVISION)\" # revision mark/g' ./binderfinder/__init__.py

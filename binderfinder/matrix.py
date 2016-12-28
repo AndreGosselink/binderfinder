@@ -186,14 +186,18 @@ as described.
                     self._matax.text(i-0.5, j+0.15, '{:.1f}'.format(self._matrix[j, i, ci1]), color=c)
                     self._matax.text(i-0.25, j-0.25, '{:.1f}'.format(self._matrix[j, i, ci0]), color=c)
 
-        marked = []
-        for row in self._matrix:
+        marked = {}
+        for row in self._matrix[:-1,:-1,:]:
             for rgb in row:
                 cidx = ['rgb'.index(lc) for lc in self._legendflag]
                 i, j = [np.ceil(rgb[idx]*10-1) for idx in cidx]
-                if (i, j) not in marked and (i, j) != (-1, -1) and (i, j) != (0, 0):
-                    self._legax.text(i+0.2, j+0.5, '*', color='w')
-                    marked.append((i, j))
+                if (i, j) != (-1, -1) and (i, j) != (0, 0):
+                    marked.setdefault((i, j), 0)
+                    marked[(i, j)] += 1
+        
+        for (i, j), val in marked.items():
+            # self._legax.text(i+0.2, j+0.5, '*', color='w')
+            self._legax.text(j+0.2, i+0.4, str(val), color='w', size='xx-small')
 
     def _plot_legend(self):
         axis = np.linspace(0.1, 1.0, 10)
