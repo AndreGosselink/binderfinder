@@ -75,7 +75,10 @@ as described.
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
-            ceil=False, normalize='total', debug=False, cmap='grey'):
+            ceil=False, normalize='total', debug=False, cmap='grey', figsize=[10, 5]):
+
+        # first of set figure size by parameter
+        plt.rcParams["figure.figsize"] = figsize
 
         # check and parse parameter
         if not annotate in ('none', 'data', 'all'):
