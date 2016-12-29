@@ -1,3 +1,5 @@
+REVISION=
+
 .PHONY:
 deploy: merge update_rev commit
 
