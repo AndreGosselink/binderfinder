@@ -43,18 +43,19 @@ class EventHandler(object):
         for j, row in enumerate(self.other._matrix):
             for i, rgb in enumerate(row):
                 if rgb[i0] == cval and rgb[i1] == rval:
-                    to_draw.append((i+1, j+1))
+                    to_draw.append([(i+1, j+1), rgb])
         
         while len(to_draw) > len(self.other._matpatches):
-            self.other._matpatches.append(self.other._matax.plot([], [], c='r', lw=2) +
-                                          self.other._heatax.plot([], [], c='r', lw=2)
+            self.other._matpatches.append(self.other._matax.plot([], [], c='r', lw=2.2) +
+                                          self.other._heatax.plot([], [], c='r', lw=2.2)
                                          )
         
         # set new patches
-        for (x, y), lines in zip(to_draw, self.other._matpatches):
+        for ((x, y), rgb), lines in zip(to_draw, self.other._matpatches):
             for l in lines:
                 l.set_xdata([x-1.5, x-0.5, x-0.5, x-1.5, x-1.5])
                 l.set_ydata([y-1.5, y-1.5, y-0.5, y-0.5, y-1.5])
+                # l.set_color(1 - rgb)
 
         # set the rest to empty
         if len(to_draw) < len(self.other._matpatches):
@@ -100,6 +101,7 @@ class EventHandler(object):
                 self.other._sort_row(row)
                 self.other._sort_col(col)
         elif self.other._sortflag == 'none':
+            # if non, set to row automatically, where row is the default option
             self.other._sortflag = 'row'
             return self.on_click(event)
         else:

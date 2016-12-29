@@ -264,6 +264,8 @@ as described.
         self._matimg = self._matax.imshow(self._matrix, interpolation='none')
         self._heatimg = self._heatax.imshow(np.zeros(self._matrix.shape[:2]),
                                             interpolation='none', vmin=0, vmax=1, cmap=self._heatmap_color)
+
+        plt.colorbar(mappable=self._heatimg, ax=self._heatax)
         self._update_matrixdata()
 
         self._set_ticks(self.subnames, self.typnames)
