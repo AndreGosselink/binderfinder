@@ -279,6 +279,24 @@ as described.
         self._check_dir = RadioButtons(self.cont_dir, ('row', 'col', 'both'))
         self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
+        # spacer between stats and data
+        self._plot_spacer()
+
+        # remove spines
+        for ax in (self._matax, self._heatax):
+            # for line in ('top', 'bottom', 'left', 'right'):
+            #     ax.spines[l].set_visible(False)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+
+    def _plot_spacer(self):
+        spacer_color = self.fig.get_facecolor()
+        hval, vval, _ = self._matrix.shape
+
+        for ax in (self._matax, self._heatax):
+            ax.axvline(vval-1.5, lw=5, c=spacer_color)
+            ax.axhline(hval-1.5, lw=5, c=spacer_color)
+
     def _get_heat(self):
         heat = np.asarray([[rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
         return heat / np.max(heat)
