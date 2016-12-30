@@ -18,8 +18,12 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
                  'ceil': True,
             'normalize': 'channels',
                 'debug': False,
-                 'cmap': 'hot',
-              'figsize': [13, 6]
+                 'cmap': 'jet',
+              'figsize': [13, 6],
+            'ch_labels':  ['red', 'green', 'blue'],
+          'legend_font': {'color': 'r',
+                          'size': 'x-small',
+                         },
            }
 
 if not '-noconsole' in sys.argv:

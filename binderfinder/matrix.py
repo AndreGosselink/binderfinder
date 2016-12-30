@@ -10,7 +10,7 @@ if os.name != 'nt' or sys.platform != 'win32':
 import numpy as np
 import matplotlib.pyplot as plt
 from dataparser import parse_csv
-from evaluate import evaluate, stats_calculation, sort_reduction
+from evaluate import evaluate, stats_calculation, sort_reduction, rgb_to_illumination
 import warnings
 from eventhandler import EventHandler
 from matplotlib.widgets import RadioButtons
@@ -75,7 +75,8 @@ as described.
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
-            ceil=False, normalize='total', debug=False, cmap='grey', figsize=[10, 5]):
+            ceil=False, normalize='total', debug=False, cmap='grey', figsize=[10, 5],
+            ch_labels=['red', 'green', 'blue'], legend_font={'color': 'w', 'size': 'x-small'}):
 
         # first of set figure size by parameter
         plt.rcParams["figure.figsize"] = figsize
@@ -136,6 +137,11 @@ as described.
             self.subnames += ['stats']
         # cmap
         self._heatmap_color = cmap
+        # legend font
+        self._leg_count_font = legend_font
+        # legend labels
+        self._ch_labels = ch_labels
+
 
     def __str__(self):
         """
@@ -201,8 +207,7 @@ as described.
 
         for (i, j), val in marked.items():
             # self._legax.text(i+0.2, j+0.5, '*', color='w')
-            self._legax.text(i+0.2, j+0.4, str(val), color='w', size='xx-small')
-        
+            self._legax.text(i+0.2, j+0.4, str(val), **self._leg_count_font)
 
     def _plot_legend(self):
         axis = np.linspace(0.1, 1.0, 10)
@@ -212,8 +217,14 @@ as described.
         for lc, g in zip(self._legendflag, grid):
             i = 'rgb'.index(lc)
             leg_matrix[:,:,i] = g
-        self._legax.set_xlabel(self._legendflag[0].upper())
-        self._legax.set_ylabel(self._legendflag[1].upper())
+
+        #TODO very messy labelstuff
+        cidx = ['rgb'.index(lc) for lc in self._legendflag]
+        xlabel = self._ch_labels[cidx[0]]
+        ylabel = self._ch_labels[cidx[1]]
+        self._legax.set_xlabel(xlabel)
+        self._legax.set_ylabel(ylabel)
+
         self._legax.imshow(leg_matrix, interpolation='none')
         self._legax.set_xticks(range(10))
         self._legax.set_xticklabels(names)
@@ -268,8 +279,26 @@ as described.
         self._check_dir = RadioButtons(self.cont_dir, ('row', 'col', 'both'))
         self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
+        # spacer between stats and data
+        self._plot_spacer()
+
+        # remove spines
+        for ax in (self._matax, self._heatax):
+            # for line in ('top', 'bottom', 'left', 'right'):
+            #     ax.spines[l].set_visible(False)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+
+    def _plot_spacer(self):
+        spacer_color = self.fig.get_facecolor()
+        hval, vval, _ = self._matrix.shape
+
+        for ax in (self._matax, self._heatax):
+            ax.axvline(vval-1.5, lw=5, c=spacer_color)
+            ax.axhline(hval-1.5, lw=5, c=spacer_color)
+
     def _get_heat(self):
-        heat = np.asarray([[0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2] for rgb in row] for row in self._matrix])
+        heat = np.asarray([[rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
         return heat / np.max(heat)
 
     def _update_matrixdata(self):
