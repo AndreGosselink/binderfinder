@@ -10,7 +10,7 @@ if os.name != 'nt' or sys.platform != 'win32':
 import numpy as np
 import matplotlib.pyplot as plt
 from dataparser import parse_csv
-from evaluate import evaluate, stats_calculation, sort_reduction
+from evaluate import evaluate, stats_calculation, sort_reduction, rgb_to_illumination
 import warnings
 from eventhandler import EventHandler
 from matplotlib.widgets import RadioButtons
@@ -208,7 +208,6 @@ as described.
         for (i, j), val in marked.items():
             # self._legax.text(i+0.2, j+0.5, '*', color='w')
             self._legax.text(i+0.2, j+0.4, str(val), **self._leg_count_font)
-        
 
     def _plot_legend(self):
         axis = np.linspace(0.1, 1.0, 10)
@@ -275,7 +274,7 @@ as described.
         self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
     def _get_heat(self):
-        heat = np.asarray([[0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2] for rgb in row] for row in self._matrix])
+        heat = np.asarray([rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
         return heat / np.max(heat)
 
     def _update_matrixdata(self):
