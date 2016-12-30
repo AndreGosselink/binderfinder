@@ -291,11 +291,12 @@ as described.
 
     def _plot_spacer(self):
         spacer_color = self.fig.get_facecolor()
-        hval, vval, _ = self._matrix.shape
+        offset = 1.45
+        hval, vval, _ = [val-offset for val in self._matrix.shape]
 
         for ax in (self._matax, self._heatax):
-            ax.axvline(vval-1.5, lw=5, c=spacer_color)
-            ax.axhline(hval-1.5, lw=5, c=spacer_color)
+            ax.axvline(vval, lw=5, c=spacer_color)
+            ax.axhline(hval, lw=5, c=spacer_color)
 
     def _get_heat(self):
         heat = np.asarray([[rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
