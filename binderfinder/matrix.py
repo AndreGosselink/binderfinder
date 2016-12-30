@@ -75,7 +75,8 @@ as described.
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
             annotate='none', stats=False, sort='none', legend='',
-            ceil=False, normalize='total', debug=False, cmap='grey', figsize=[10, 5]):
+            ceil=False, normalize='total', debug=False, cmap='grey', figsize=[10, 5],
+            ch_labels=['red', 'green', 'blue'], legend_font={'color': 'w', 'size': 'x-small'}):
 
         # first of set figure size by parameter
         plt.rcParams["figure.figsize"] = figsize
@@ -136,6 +137,11 @@ as described.
             self.subnames += ['stats']
         # cmap
         self._heatmap_color = cmap
+        # legend font
+        self._leg_count_font = legend_font
+        # legend labels
+        self._ch_labels = ch_labels
+
 
     def __str__(self):
         """
@@ -201,7 +207,7 @@ as described.
 
         for (i, j), val in marked.items():
             # self._legax.text(i+0.2, j+0.5, '*', color='w')
-            self._legax.text(i+0.2, j+0.4, str(val), color='w', size='xx-small')
+            self._legax.text(i+0.2, j+0.4, str(val), **self._leg_count_font)
         
 
     def _plot_legend(self):
