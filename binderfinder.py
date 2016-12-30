@@ -22,7 +22,7 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
               'figsize': [13, 6],
             'ch_labels':  ['red', 'green', 'blue'],
           'legend_font': {'color': 'r',
-                          'size': 'x-smal',
+                          'size': 'x-small',
                          },
            }
 

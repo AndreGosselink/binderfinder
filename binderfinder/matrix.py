@@ -217,8 +217,14 @@ as described.
         for lc, g in zip(self._legendflag, grid):
             i = 'rgb'.index(lc)
             leg_matrix[:,:,i] = g
-        self._legax.set_xlabel(self._legendflag[0].upper())
-        self._legax.set_ylabel(self._legendflag[1].upper())
+
+        #TODO very messy labelstuff
+        cidx = ['rgb'.index(lc) for lc in self._legendflag]
+        xlabel = self._ch_labels[cidx[0]]
+        ylabel = self._ch_labels[cidx[1]]
+        self._legax.set_xlabel(xlabel)
+        self._legax.set_ylabel(ylabel)
+
         self._legax.imshow(leg_matrix, interpolation='none')
         self._legax.set_xticks(range(10))
         self._legax.set_xticklabels(names)
@@ -274,7 +280,7 @@ as described.
         self._event_handler = EventHandler(self.fig, self, debug=self._debugflag)
 
     def _get_heat(self):
-        heat = np.asarray([rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
+        heat = np.asarray([[rgb_to_illumination(rgb) for rgb in row] for row in self._matrix])
         return heat / np.max(heat)
 
     def _update_matrixdata(self):

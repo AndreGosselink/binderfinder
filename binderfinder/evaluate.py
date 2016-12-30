@@ -46,7 +46,7 @@ def evaluate(a, c, a_ref, c_ref):
 
 def rgb_to_illumination(rgb):
     factors = (0.299, 0.587, 0.114)
-    return np.asarray(map(f*c for f, c in zip(factors, rgb)), float)
+    return np.sum(np.asarray([f*c for f, c in zip(factors, rgb)], float))
 
 
 def stats_calculation(datapoints):
@@ -68,4 +68,3 @@ def sort_reduction(datapoints):
     """
     return datapoints[:,1]
 
-def
