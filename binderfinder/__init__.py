@@ -1,2 +1,2 @@
-__hgrev__ = 50
-__version__ = "0.99 rev {}".format(__hgrev__)
+__hgrev__ = 52
+__version__ = "1.0 rev {}".format(__hgrev__+1)
