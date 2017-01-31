@@ -9,7 +9,8 @@ if os.name != 'nt' or sys.platform != 'win32':
 
 import numpy as np
 import matplotlib.pyplot as plt
-from dataparser import parse_csv
+# from dataparser import parse_csv
+from dataparser import Parser
 from evaluate import evaluate, stats_calculation, sort_reduction, rgb_to_illumination
 import warnings
 from eventhandler import EventHandler
@@ -115,7 +116,10 @@ as described.
         self._debugflag = debug
 
         # parse file remember the filename of the parsed file
-        self.typnames, self.subnames, self.data = parse_csv(filename)
+        # self.typnames, self.subnames, self.data = parse_csv(filename)
+        #TODO update to new style NxM parser
+        parser = Parser(filename)
+        self.typnames, self.subnames, self.data = parser.get_matrix_formatted()
         self.filename = filename
         # set reference value
         self.ref = np.asarray(reference, float)

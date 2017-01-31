@@ -12,8 +12,9 @@ class Parser(object):
         self.data_layout = {self.PROP_KEY: -1,
                             self.PARA_KEY: -1,}
 
-        header_error = filename + ", Line {}: first two lines of file must be " + "'{};UINT' and '{};UINT'".format(self.PROP_KEY, self.PARA_KEY)
-        data_error = filename + ", Line {}: data seems to be inconsistent..."
+        header_error_msg = filename + ", Line {}: first two lines of file must be " + "'{};UINT' and '{};UINT'".format(self.PROP_KEY, self.PARA_KEY)
+        data_error_msg = filename + ", Line {}: inconsistency while parsing found"
+        incons_error_msg = filename + ", inconistency in level of '{}' while checking found"
 
 
         with open(filename, 'r') as csv_file:
@@ -21,16 +22,19 @@ class Parser(object):
             try:
                 self.parse_header(reader)
             except InvalidHeader:
-                raise InvalidHeader(header_error.format(reader.line_num))
+                raise InvalidHeader(header_error_msg.format(reader.line_num))
             
             try:
                 data = self.parse_data(reader)
-                print data
-                seems to parse not deep enough, wrong last prop
-                self.check_consistency(self, data)
-                self.data = data
             except InconsistentData:
-                raise InconsistentData(data_error.format(reader.line_num))
+                raise InconsistentData(data_error_msg.format(reader.line_num))
+            
+            incons_dset = self.find_inconsisty(data)
+            if incons_dset != '':
+                raise InconsistentData(incons_error_msg.format(incons_dset))
+            
+            self.data = data
+
 
     def parse_header(self, reader):
         for layout in [reader.next() for i in xrange(2)]:
@@ -54,34 +58,44 @@ class Parser(object):
         data = {}
         for dset in reader:
             curdict = data
-            for prop in dset[:prop_num-1]:
-
+            props = dset[:prop_num]
+            values = dset[prop_num:]
+            for prop in props[:-1]:
                 # check data consistency
                 if len(dset[prop_num:]) != para_num:
                     raise InconsistentData
-                
                 curdict = curdict.setdefault(prop, {})
-
-            prop = dset[prop_num]
-            values = dset[prop_num:]
-            curdict[prop] = param_template(values)
+            curdict[props[-1]] = param_template(values)
         return data
 
-    def check_consistency(self, data):
-
+    def find_inconsisty(self, data):
+        keys = data.keys()
         try:
-            keys = data.keys()
+            ref_sub = data[keys[0]].keys()
         except AttributeError:
-            return True
-
-        ref_sub = data[keys[0]].keys()
+            return ''
 
         for k in keys:
             if not all([sub in ref_sub for sub in data[k].keys()]):
-                raise InconsistentData
-            self.check_consistency(data[k])
+                return k
+            res = self.find_inconsisty(data[k])
+            if res != '':
+                return '{}/{}'.format(k, res)
 
-        return True
+        return ''
+
+    def get_matrix_formatted(self):
+        #TODO implement correct access w/o using old data format -> need some hacking in the matrix
+        binder = self.data.keys()
+        linker = self.data[binder[0]].keys()
+        data = [[], []]
+
+        for b in binder:
+            for l in linker:
+                data[0].append(self.data[b][l][0])
+                data[1].append(self.data[b][l][1])
+        return binder, linker, np.asarray(data, float).T
+
 
 
 def parse_csv(filename):
