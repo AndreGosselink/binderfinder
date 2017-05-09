@@ -1,3 +1,6 @@
+version 1.22
+??? updateing sort bug
+
 version 1.21
 -some cleanup in the codebase (removed antigen car related variable names)
 -added testdata
