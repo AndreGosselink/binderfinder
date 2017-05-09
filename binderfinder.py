@@ -10,7 +10,7 @@ def start_binderfinder(defaults):
 
 defaults = { 'filename': './data/mock_data_rnd.csv',
             'reference': [100, 100],
-              'weights': [0.05, 1],
+              'weights': [1.0, 1.0],
              'annotate': 'none',
                 'stats': True,
                  'sort': 'none',
