@@ -29,6 +29,10 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
 if not '-noconsole' in sys.argv:
     print "starting binderfinder " + bf.__version__  + '\n'
     print 'started with pid', os.getpid()
+    try:
+        os.system('hg branch')
+    except:
+        pass
 
 start_binderfinder(defaults)
 
