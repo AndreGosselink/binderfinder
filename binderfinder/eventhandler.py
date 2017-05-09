@@ -20,8 +20,10 @@ class EventHandler(object):
     def catch(f, *args, **kwargs):
         def _logged(self, event):
             if self._debugflag:
-                self._logfile.write(str(event) + '\n')
+                strevnt = str(event)
+                self._logfile.write(strevnt + '\n')
                 self._logfile.flush()
+                print strevnt
             return f(self, event)
 
         return _logged
@@ -112,9 +114,17 @@ class EventHandler(object):
     def on_click(self, event):
         if event.inaxes == self.other._matax:
             self._clicked_matrix(event)
+            if self._debugflag:
+                print 'clicked matrix'
         elif event.inaxes == self.other._legax:
             self._clicked_legend(event)
-            self.other.fig.canvas.draw()
+            if self._debugflag:
+                print 'clicked legend'
+        elif event.inaxes == self.other._heatax:
+            self._clicked_matrix(event)
+            if self._debugflag:
+                print 'clicked heatax'
+        self.other.fig.canvas.draw()
     
     def _clicked_legend(self, event):
         for k, v in self._over_legend.items():
@@ -131,10 +141,16 @@ class EventHandler(object):
         col, row = map(lambda x: int(np.round(x)), (event.xdata, event.ydata))
 
         if self.other._sortflag == 'row':
+            if self._debugflag:
+                print 'sorting by row', row
             self.other._sort_row(row)
         elif self.other._sortflag == 'col':
+            if self._debugflag:
+                print 'sorting by col', col
             self.other._sort_col(col)
         elif self.other._sortflag == 'both':
+            if self._debugflag:
+                print 'sorting by (row, col)', (row, col)
             for i in xrange(3):
                 self.other._sort_row(row)
                 self.other._sort_col(col)
