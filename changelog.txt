@@ -1,3 +1,12 @@
+version 1.21
+-some cleanup in the codebase (removed antigen car related variable names)
+-added testdata
+-cleaned up evaluate function
+-bugfixing debug mode
+-matrix now does exatly what is said, concerning weigts and refs. evaluate function is tailored concordingly
+ISSIUES:
+extrem values (every value of a parameter is equal, is zero, is one) seems to breake default sorting function
+
 version 1.2
 -clicking on the legend now markes all the samples in the legend tile clicked
 -clicking again unmarks all samples

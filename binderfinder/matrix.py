@@ -62,7 +62,8 @@ Evaluates a csv file containing arbitary values measured for any given
 combination of up to two subtypes. The csv file needs to have the following
 layout:
     
-    type;subtype;val0;val1
+    properties;n
+    parameter;m
     A;x;v0_Ax;v1_Ax
     A;y;v0_Ay;v1_Ay
     B;x;v0_Bx;v1_Bx
@@ -157,13 +158,13 @@ as described.
         return '{} types with {} subtypes in {} datapoints'.format(self.types, self.subtypes, len(self.data))
     
     def _evaluate(self):
-        a_ref, c_ref = self.ref
+        # magic numbers, always the first two params are choosen. needs to be parameterized
+        #TODO slice data accordingly to some slicing parameter
         self.param0 = self.data[:,:1].squeeze()
         self.param1 = self.data[:,1:2].squeeze()
-        w_a, w_c = self._weights
         ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
-        for i, (a, c) in enumerate(zip(self.param0, self.param1)):
-            rgb = evaluate(a * w_a, c * w_c, a_ref * w_a, c_ref * w_c)
+        for i, params in enumerate(zip(self.param0, self.param1)):
+            rgb = evaluate(params, self._weights, self.ref)
             if any(map(lambda x: x < 0, rgb)):
                 raise ValueError('Evaluation function can not negative color value!')
             self._matrix[i/self.subtypes, i%self.subtypes][ci0] = rgb[ci0] 
@@ -190,7 +191,7 @@ as described.
 
     def _annotate(self):
         if self._debugflag:
-            self.cont_dir.text(0, 0, 'DEBUG', c='r')
+            self.cont_dir.text(0, 0, 'DEBUG', color='r')
             for i, sn in enumerate(self.subnames):
                 for j, tn in enumerate(self.typnames):
                     c = [(3 - np.sum(self._matrix[j, i])) / 4] * 3
