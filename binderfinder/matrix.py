@@ -115,6 +115,9 @@ as described.
         self._weights = np.array(weights, float)
         self._debugflag = debug
 
+        self._marked_samples = {}
+        self._markedpatches = []
+
         # parse file remember the filename of the parsed file
         # self.typnames, self.subnames, self.data = parse_csv(filename)
         #TODO update to new style NxM parser
@@ -337,15 +340,24 @@ as described.
             h1 = ''
             for i in xrange(2 * self.subtypes):
                 h0 += ';{}'.format(self.subnames[i/2])
-                h1 += ';{}'.format(['a', 'c'][i%2])
+                h1 += ';{}'.format(self.typnames[i%2])
+                if i%2:
+                    h0 += ';' + h0.split(';')[-1]
+                    h1 += ';marked(col,row)'
 
             df.write(h0 + '\n' + h1 + '\n')
 
             for i, (a, c) in enumerate(zip(self.antigen, self.carexpr)):
                 if i%self.subtypes == 0:
                     df.write('{}'.format(self.typnames[i/self.subtypes]))
-
-                df.write(';{};{}'.format(a, c))
+                
+                leg_key = (i/self.subtypes, i%self.subtypes)
+                if self._marked_samples.get(leg_key, {}) != {}:
+                    marked = '!' + str(self._marked_samples[leg_key]['col,row'])
+                else:
+                    marked = ''
+                df.write(';{};{};{}'.format(a, c, marked))
+                # df.write(';{};{}'.format(i%self.subtypes, i/self.subtypes))
 
                 if i%self.subtypes == self.subtypes-1:
                     df.write('\n')

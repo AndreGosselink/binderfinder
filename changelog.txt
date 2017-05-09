@@ -1,0 +1,12 @@
+version 1.2
+-clicking on the legend now markes all the samples in the legend tile clicked
+-clicking again unmarks all samples
+-the marked status is shown by a magenta, dotted line in the legend
+-the marked samples will be written into the matrix data output inclusive where to find the marked samples in the legend
+
+version 1.1
+-parser expects now a header of the form
+
+parameter;n
+properties;m
+
