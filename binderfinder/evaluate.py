@@ -57,5 +57,5 @@ def sort_reduction(datapoints):
                 wicht then is used to order the data in
                 a sort
     """
-    return datapoints[:,1]
+    return (datapoints[:,1] + datapoints[:,2])/2.0
 
