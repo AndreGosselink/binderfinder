@@ -158,11 +158,11 @@ as described.
     
     def _evaluate(self):
         a_ref, c_ref = self.ref
-        self.antigen = self.data[:,:1].squeeze()
-        self.carexpr = self.data[:,1:2].squeeze()
+        self.param0 = self.data[:,:1].squeeze()
+        self.param1 = self.data[:,1:2].squeeze()
         w_a, w_c = self._weights
         ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
-        for i, (a, c) in enumerate(zip(self.antigen, self.carexpr)):
+        for i, (a, c) in enumerate(zip(self.param0, self.param1)):
             rgb = evaluate(a * w_a, c * w_c, a_ref * w_a, c_ref * w_c)
             if any(map(lambda x: x < 0, rgb)):
                 raise ValueError('Evaluation function can not negative color value!')
@@ -347,7 +347,7 @@ as described.
 
             df.write(h0 + '\n' + h1 + '\n')
 
-            for i, (a, c) in enumerate(zip(self.antigen, self.carexpr)):
+            for i, (a, c) in enumerate(zip(self.param0, self.param1)):
                 if i%self.subtypes == 0:
                     df.write('{}'.format(self.typnames[i/self.subtypes]))
                 
