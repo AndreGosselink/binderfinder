@@ -1,7 +1,4 @@
 # BinderFinder
-
-Overview
-==============================
 Small programm written in Python to visualise, reduce and sort multidimensional, labeled data.
 This project aims to keep it simple and reduce the need of packages to a minimum.
 
