@@ -14,7 +14,7 @@ class EventHandler(object):
         self._over_legend = {}
         if debug == True:
             self._logfile = open('logfile.txt', 'w')
-            self._logfile.write(str(os.name) + '\n\n')
+            self._logfile.write('os.name >>' + str(os.name) + '\n\n')
             self._logfile.flush()
 
     def catch(f, *args, **kwargs):
