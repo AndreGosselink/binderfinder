@@ -413,16 +413,14 @@ as described.
             self._matrix[r,-1] = stats_calculation(row)
 
     def _cleanup_sortby(self):
-        if len(self._sorted_by) < 6:
-            return
-        both_c = reduce(lambda a, b: a if a == b else (), self._sorted_by[-5::2])
-        both_r = reduce(lambda a, b: a if a == b else (), self._sorted_by[-6::2])
-        if both_r != () and both_c != ():
-            self._sorted_by = self._sorted_by[:-6]
-        title = '{},{}'.format(both_r[0], both_c[0])
-        idx = (both_r[1], both_c[1])
-        self._sorted_by.append((title, idx))
-
+        if len(self._sorted_by) >= 6:
+            both_c = reduce(lambda a, b: a if a == b else (), self._sorted_by[-5::2])
+            both_r = reduce(lambda a, b: a if a == b else (), self._sorted_by[-6::2])
+            if both_r != () and both_c != ():
+                self._sorted_by = self._sorted_by[:-6]
+                title = '{},{}'.format(both_r[0], both_c[0])
+                idx = (both_r[1], both_c[1])
+                self._sorted_by.append((title, idx))
 
     def _sort_row(self, colidx):
         new_matrix = self._matrix.copy()
