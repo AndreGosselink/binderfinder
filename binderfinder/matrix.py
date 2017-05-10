@@ -17,6 +17,8 @@ from eventhandler import EventHandler
 from matplotlib.widgets import RadioButtons
 import matplotlib.gridspec as gridspec
 
+#TODO: Data Pipeline
+
 
 class Matrix(object):
     """
@@ -99,8 +101,8 @@ as described.
             if sum(['r' in legend, 'g' in legend, 'b' in legend]) < 2:
                 raise ValueError("legend must only have 'r', 'g' or 'b'")
 
-        if not normalize in ('total', 'channels'):
-                raise ValueError("normalize must be 'total' or 'channels'")
+        if not normalize in ('total', 'channels', 'none'):
+                raise ValueError("normalize must be 'none', 'total' or 'channels'")
 
         if not ceil and legend != '':
             warnings.warn('with ceil=False the legend my not reflect all the colours shown. The mouseover will reference the data as if ceil was True!')
@@ -149,6 +151,12 @@ as described.
         self._leg_count_font = legend_font
         # legend labels
         self._ch_labels = ch_labels
+        
+        # keep track of sorting for csv dump
+        self._sorted_by = []        
+
+        # keep maxvals at least
+        self._maxvals = [None, None, None]
 
 
     def __str__(self):
@@ -173,9 +181,12 @@ as described.
     def _normalize(self):
         if self._normalizeflag == 'total':
             self._matrix /= np.max(self._matrix)
+        elif self._normalizeflag == 'none': 
+            pass
         else:
             for i in xrange(3):
                 max_val = np.max(self._matrix[:,:,i])
+                self._maxvals[i] = max_val
                 if max_val == 0:
                     continue
                 self._matrix[:,:,i] /= max_val
@@ -333,22 +344,52 @@ as described.
 
         self.fig.savefig(os.path.join(path, fname) + '_matrix.png')
         self._dump2csv(os.path.join(path, fname) + '_matrixdata.csv')
+        self._dumpsorting(os.path.join(path, fname) + '_sorting.txt')
+
+    def _dumpsorting(self, fname):
+        with open(fname, 'w') as df:
+            df.write('FILE:{}\n'.format(self.filename))
+            df.write('VERSION:{}\n\n'.format(__version__))
+            for at, idx in self._sorted_by:
+                df.write('{};{}\n'.format(at, idx))
 
     def _dump2csv(self, fname):
+
+        param_names = []
+        for lc in self._legendflag:
+            i = 'rgb'.index(lc)
+            param_names.append(self._ch_labels[i])
+
         with open(fname, 'w') as df:
+            
+            # generic info
+
+            df.write('FILE:{}\n'.format(self.filename))
+            df.write('VERSION:{}\n\n'.format(__version__))
+
             # make a header
             h0 = ''
             h1 = ''
             for i in xrange(2 * self.subtypes):
                 h0 += ';{}'.format(self.subnames[i/2])
-                h1 += ';{}'.format(self.typnames[i%2])
+                h1 += ';{}'.format(param_names[i%2])
                 if i%2:
                     h0 += ';' + h0.split(';')[-1]
                     h1 += ';marked(col,row)'
 
-            df.write(h0 + '\n' + h1 + '\n')
 
-            for i, (a, c) in enumerate(zip(self.param0, self.param1)):
+            df.write(h0 + '\n' + h1 + '\n')
+            
+            ci0, ci1 = ['rgb'.index(lc) for lc in self._legendflag]
+            # cropt the stats
+            if self._statsflag:
+                lin_matrix = self._matrix[:-1,:-1].ravel().squeeze()
+            else:
+                lin_matrix = self._matrix.ravel().squeeze()
+
+            lin_matrix = lin_matrix.reshape(lin_matrix.size/3, 3)
+
+            for i, rgb in enumerate(lin_matrix):
                 if i%self.subtypes == 0:
                     df.write('{}'.format(self.typnames[i/self.subtypes]))
                 
@@ -357,8 +398,7 @@ as described.
                     marked = '!' + str(self._marked_samples[leg_key]['col,row'])
                 else:
                     marked = ''
-                df.write(';{};{};{}'.format(a, c, marked))
-                # df.write(';{};{}'.format(i%self.subtypes, i/self.subtypes))
+                df.write(';{};{};{}'.format(rgb[ci0] * self._maxvals[ci0], rgb[ci1] * self._maxvals[ci1], marked))
 
                 if i%self.subtypes == self.subtypes-1:
                     df.write('\n')
@@ -372,9 +412,23 @@ as described.
             row = self._matrix[r,:-1,:].squeeze()
             self._matrix[r,-1] = stats_calculation(row)
 
+    def _cleanup_sortby(self):
+        if len(self._sorted_by) < 6:
+            return
+        both_c = reduce(lambda a, b: a if a == b else (), self._sorted_by[-5::2])
+        both_r = reduce(lambda a, b: a if a == b else (), self._sorted_by[-6::2])
+        if both_r != () and both_c != ():
+            self._sorted_by = self._sorted_by[:-6]
+        title = '{},{}'.format(both_r[0], both_c[0])
+        idx = (both_r[1], both_c[1])
+        self._sorted_by.append((title, idx))
+
+
     def _sort_row(self, colidx):
         new_matrix = self._matrix.copy()
         new_subnames = []
+
+        self._sorted_by.append(('row', colidx))
 
         for n, i in enumerate(np.argsort(sort_reduction(self._matrix[colidx,:-1].squeeze()))):
             new_matrix[:,n] = self._matrix[:,i]
@@ -384,10 +438,13 @@ as described.
         self.subnames = new_subnames
         if self._annotateflag == 'all':
             self.subnames += ['stats']
+        self._cleanup_sortby()
 
     def _sort_col(self, rowidx):
         new_matrix = self._matrix.copy()
         new_typnames = []
+
+        self._sorted_by.append(('col', rowidx))
 
         for n, i in enumerate(np.argsort(sort_reduction(self._matrix[:-1,rowidx].squeeze()))):
             new_matrix[n,:] = self._matrix[i,:]
@@ -397,9 +454,9 @@ as described.
         self.typnames = new_typnames
         if self._annotateflag == 'all':
             self.typnames += ['stats']
+        self._cleanup_sortby()
 
     def _sort_matrix(self):
-        
         if self._sortflag in ('both', 'col'):
             for step in xrange(3):
                 self._sort_col(-1)
