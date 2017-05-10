@@ -1,5 +1,20 @@
+version 1.23
+-fixed bug with wrong value in matrixdata
+-dumps a file with the sorting steps
+-added filename and version to dumpnames
+-added licence and copyright informations
+-fixed the sorted by file output
+ISSUES:
+-value zero isn't handle correctly (outside of legend)
+-sorting might be somewhat impaired
+-values in matrixdata are only somwhat near the raw data, due to information lost when applying ceil. however, just sortign w/o any normalization will yield the correct order of values as the labesl in the matrix indicate
+-normalized and raw data yield different results when sorted
+
 version 1.22
-??? updateing sort bug
+-bug with extrem values fixed/found source (func sort_reduction only tested for single parameter)
+ISSUES:
+-matrix data shows correct placement of labels, and correct marking, but wrong values are fetched for the _matrixdata
+-sorted by file doesn't work
 
 version 1.21
 -some cleanup in the codebase (removed antigen car related variable names)
@@ -7,7 +22,7 @@ version 1.21
 -cleaned up evaluate function
 -bugfixing debug mode
 -matrix now does exatly what is said, concerning weigts and refs. evaluate function is tailored concordingly
-ISSIUES:
+ISSUES:
 extrem values (every value of a parameter is equal, is zero, is one) seems to breake default sorting function
 
 version 1.2

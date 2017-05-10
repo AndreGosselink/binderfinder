@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from . import __version__
 
 class EventHandler(object):
 
@@ -14,7 +15,7 @@ class EventHandler(object):
         self._over_legend = {}
         if debug == True:
             self._logfile = open('logfile.txt', 'w')
-            self._logfile.write(str(os.name) + '\n\n')
+            self._logfile.write('os.name >>' + str(os.name) + '\n\n')
             self._logfile.flush()
 
     def catch(f, *args, **kwargs):
@@ -139,7 +140,6 @@ class EventHandler(object):
 
     def _clicked_matrix(self, event):
         col, row = map(lambda x: int(np.round(x)), (event.xdata, event.ydata))
-
         if self.other._sortflag == 'row':
             if self._debugflag:
                 print 'sorting by row', row

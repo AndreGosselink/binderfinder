@@ -1,2 +1,4 @@
 syntax: regexp
-^.*\.(png|pyc|swp|txt|orig|stackdump)$
+^.*\.(png|pyc|swp|orig|stackdump)$
+^.*(matrixdata|sorting).*$
+^.*logfile.*$
