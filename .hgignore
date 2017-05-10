@@ -1,2 +1,3 @@
 syntax: regexp
 ^.*\.(png|pyc|swp|txt|orig|stackdump)$
+^.*matrixdata.*$
