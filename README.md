@@ -30,8 +30,7 @@ Dependencies
 
 Licence
 ==============================
-Copyright (c) Andre Gosselink, Niels Werchau
-All rights reserved.
+Copyright (c) Andre Gosselink, Niels Werchau - all rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
