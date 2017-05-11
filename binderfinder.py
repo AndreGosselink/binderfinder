@@ -18,6 +18,7 @@ import binderfinder as bf
 from binderfinder.matrix import Matrix
 import sys
 import os
+import subprocess as sub
 
 def start_binderfinder(defaults):
     m = Matrix(**defaults)
@@ -43,7 +44,17 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
            }
 
 if not '-noconsole' in sys.argv:
-    print "starting binderfinder " + bf.__version__  + '\n'
+    
+    try:
+        hg = sub.Popen('hg branch', stdout=sub.PIPE)
+        branch = hg.stdout.read()
+        if not ('default' in branch or 'release' in branch):
+            branch = ''
+        hg.kill()
+    except:
+        branch = ''
+
+    print "starting binderfinder " + bf.__version__  + ' ' + branch
     print 'started with pid', os.getpid()
 
 start_binderfinder(defaults)
