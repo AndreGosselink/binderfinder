@@ -1,3 +1,10 @@
+version 1.25 DEV
+-added irisr dataset
+-made pca_test.py aware of iris dataset and interfaced it
+
+version 1.24
+-removed output when marking cells. the marked cells are soley visible in the matrixdata output
+
 version 1.23
 -fixed bug with wrong value in matrixdata
 -dumps a file with the sorting steps
