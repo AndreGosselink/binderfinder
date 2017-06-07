@@ -18,7 +18,7 @@ Preview
 
 Disclaimer
 ==============================
-As this is a side rpoject, there are no warranties for correctness. Also there are several hacky passages in the source code.
+As this is a side project, there are no warranties for correctness. Also there are several hacky passages in the source code.
 
 
 Dependencies
