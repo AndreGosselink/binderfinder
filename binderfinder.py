@@ -15,16 +15,18 @@ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS 'AS IS' AND ANY EXPRES
 
 
 import binderfinder as bf
-from binderfinder.matrix import Matrix
+from binderfinder import Matrix
 import sys
 import os
+import subprocess as sub
 
 def start_binderfinder(defaults):
     m = Matrix(**defaults)
     m.show_me_where_the_white_rabbit_goes()
     m.save_last_run()
 
-defaults = { 'filename': './data/mock_data_rnd.csv',
+# defaults = { 'filename': './data/mock_data_rnd.csv',
+defaults = { 'filename': './data/iris_dataset/iris.data',
             'reference': [100, 100],
               'weights': [1.0, 1.0],
              'annotate': 'none',
@@ -43,7 +45,17 @@ defaults = { 'filename': './data/mock_data_rnd.csv',
            }
 
 if not '-noconsole' in sys.argv:
-    print "starting binderfinder " + bf.__version__  + '\n'
+    
+    try:
+        hg = sub.Popen('hg branch', stdout=sub.PIPE)
+        branch = hg.stdout.read()
+        if not ('default' in branch or 'release' in branch):
+            branch = ''
+        hg.kill()
+    except:
+        branch = ''
+
+    print "starting binderfinder " + bf.__version__  + ' ' + branch
     print 'started with pid', os.getpid()
     try:
         os.system('hg branch')

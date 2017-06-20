@@ -3,3 +3,6 @@ class InvalidHeader(Exception):
 
 class InconsistentData(Exception):
     pass
+
+class InvalidLabels(Warning):
+    pass

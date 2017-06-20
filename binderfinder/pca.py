@@ -1,50 +1,62 @@
 import numpy as np
+from matplotlib.mlab import PCA as mlabPCA
+import matplotlib.pyplot as plt
+from dataparser import Parser
+import os
 
 
 class PCA(object):
+    """
+Input:
+------------------------
+ filename: path to csv file, containing parsable data
 
-    def __init__(self, data_input, red_dim=2):
-        """
-        NxM matrix, where N is the datapoint and M is the number of parameters
-        """
-        # for scatter matrix (whatevert this is)
-        # mean_vector = self.get_meanvector(data_input)
+ standardize: True if input data are to be standardized. If False, only centering will be carried out.
+ """
 
-        # matrices for eigenvector calculation
-        cov_mat = self.get_cov_matrix(data_input)
-        cor_mat = self.get_cor_matrix(data_input)
-        # eigenvectors and values
-        eig_val_cov, eig_vec_cov = np.linalg.eig(cov_mat)
-        eig_val_cor, eig_vec_cor = np.linalg.eig(cor_mat)
-        # sorting by eigenvalues
-        sort_idx_cov = np.argsort(eig_val_cov)[::-1]
-        sort_idx_cor = np.argsort(eig_val_cor)[::-1]
-        eig_val_cov = eig_val_cov[sort_idx_cov]
-        eig_val_cor = eig_val_cor[sort_idx_cor]
-        eig_vec_cov = eig_vec_cov[sort_idx_cov]
-        eig_vec_cor = eig_vec_cor[sort_idx_cor]
-        # make transformation matrices
-        trans_mat_cov = np.column_stack(eig_vec_cov[:red_dim])
-        trans_mat_cor = np.column_stack(eig_vec_cor[:red_dim])
-        # transform data onto subspace
-        self.cov_transform = trans_mat_cov.T.dot(data_input.T)
-        self.cor_transform = trans_mat_cor.T.dot(data_input.T)
+    def __init__(self, filename, standardize=True, figsize=(6, 11)):
 
-        self.eig_vec_cov = eig_vec_cov
-        self.eig_vec_cor = eig_vec_cor
+        parser = Parser(filename)
 
-        self.eig_val_cov = eig_val_cov
-        self.eig_val_cor = eig_val_cor
+        _, _, data = parser.get_pca_formatted()
 
-    # def get_meanvector(self, data):
-    #     return np.mean(data, axis=0)
+        mlab_pca = mlabPCA(data, standardize)
 
-    def get_cov_matrix(self, data):
-        cov_mat = np.cov([data[:,0], data[:,1], data[:,2]])
-        return cov_mat
-
-    def get_cor_matrix(self, data):
-        cor_mat = np.corrcoef([data[:,0], data[:,1], data[:,2]])
-        return cor_mat
-
+        f, ax = plt.subplots(3, figsize=figsize)
+        ax[0].plot(mlab_pca.Y[:,0], mlab_pca.Y[:,1], 'o', markersize=7, alpha=0.5)
+        #
+        ax[0].set_xlabel('PC 1')
+        ax[0].set_ylabel('PC 2')
+        ax[0].set_title(filename + ' PCA')
         
+        pcnum = range(len(mlab_pca.fracs))
+        ax[1].scatter(pcnum, mlab_pca.fracs)
+        ax[1].set_xticks(pcnum)
+        ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
+        ax[1].set_title('Proportion of Variance')
+
+        self.biplot_mlab(ax[2], mlab_pca.Y[:,0:2], mlab_pca.Wt[:,0:2], labels=parser.data_layout[parser.PARA_LABEL])
+        
+        f.tight_layout()
+        plt.show()
+
+    def biplot_mlab(self, ax, score, coeff, labels):
+        xs = score[:,0]
+        ys = score[:,1]
+        n = coeff.shape[0]
+        # scalex = 1.0/(xs.max()- xs.min())
+        # scaley = 1.0/(ys.max()- ys.min())
+        max_val = np.max([xs.max(), ys.max()])
+        max_to = np.max(np.sqrt(coeff[:,0]**2 + coeff[:,1]**2))
+        ax.scatter(xs/max_val, ys/max_val)
+        for i in range(n):
+            tox = coeff[i, 0] / max_to
+            toy = coeff[i, 1] / max_to
+            # tox = coeff[i, 0]
+            # toy = coeff[i, 1]
+            # not a real projection!
+            ax.arrow(0, 0, tox, toy, color='r', alpha=0.5)
+            ax.text(tox * 1.15, toy * 1.15, labels[i], color='g', ha='center', va='center')
+    
+        ax.set_xlabel("PC{}".format(1))
+        ax.set_ylabel("PC{}".format(2))
