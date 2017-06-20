@@ -13,7 +13,9 @@ Install Python and Matplotlib (see Dependencies), download or clone the repositi
 
 Preview
 ==============================
+## Matrix
 ![Alt Text](https://pictr.com/images/2017/05/10/Hn2lO.png "Preview")
+## Matrix
 ![Alt Text](https://pictr.com/images/2017/06/21/ZimIP.png "Preview PCA")
 
 
