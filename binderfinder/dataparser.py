@@ -2,7 +2,6 @@ import csv
 import numpy as np
 import warnings
 from errors import InvalidHeader, InconsistentData, InvalidLabels
-import IPython as ip
 
 
 #TODO relational data model?
