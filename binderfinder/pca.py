@@ -60,3 +60,4 @@ Input:
     
         ax.set_xlabel("PC{}".format(1))
         ax.set_ylabel("PC{}".format(2))
+        ax.set_title('Biplot')
