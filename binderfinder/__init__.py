@@ -1,4 +1,4 @@
-__hgrev__ = 84
+__hgrev__ = 85
 __version__ = "1.3 rev {}".format(__hgrev__+1)
 
 print "starting binderfinder " + bf.__version__  + ' ' + branch
