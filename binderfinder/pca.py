@@ -2,6 +2,8 @@ import numpy as np
 from matplotlib.mlab import PCA as mlabPCA
 import matplotlib.pyplot as plt
 from dataparser import Parser
+from errors import DeprecatedDependency
+import warnings
 import os
 
 
@@ -19,8 +21,14 @@ Input:
         parser = Parser(filename)
 
         _, _, data = parser.get_pca_formatted()
+        
+        try:
+            mlab_pca = mlabPCA(data, standardize)
+        except Exception as e:
+            print e
+            warnings.warn('Please consider updating matplotlib. Unexpected call signatur for PCA', DeprecatedDependency)                    
+            mlab_pca = mlabPCA(data, standardize)
 
-        mlab_pca = mlabPCA(data, standardize)
 
         f, ax = plt.subplots(3, figsize=figsize)
         ax[0].plot(mlab_pca.Y[:,0], mlab_pca.Y[:,1], 'o', markersize=7, alpha=0.5)

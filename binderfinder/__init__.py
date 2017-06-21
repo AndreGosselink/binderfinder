@@ -23,6 +23,8 @@ import os
 import sys
 import subprocess as sub
 
+import matplotlib as mpl
+
 
 def start_binderfinder(defaults):
     m = Matrix(**defaults)
@@ -40,7 +42,8 @@ if not '-noconsole' in sys.argv:
     except:
         branch = ''
 
-    print "starting binderfinder " + __version__  + ' ' + branch
+    print 'starting binderfinder ' + __version__  + ' ' + branch
+    print 'using matplotlib ' + mpl.__version__
     print 'started with pid', os.getpid()
     try:
         os.system('hg branch')

@@ -6,3 +6,6 @@ class InconsistentData(Exception):
 
 class InvalidLabels(Warning):
     pass
+
+class DeprecatedDependency(Warning):
+    pass
