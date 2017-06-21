@@ -33,31 +33,58 @@ import matplotlib.pyplot as plt
 with open('./data/mock_data_pca_rnd.csv', 'w') as df:
     n = 500
     p = 5
-    smalls = 50
-    bigs = 200
     fmt = '{:.2f}'.format
-    all_high = 50
+    all_high = 0
     data = np.zeros((n, p))
-    # gen 0-2
-    data[:,0] = np.random.normal(5, 1, n)
-    data[:,1] = np.random.normal(5, 1, n)
-    data[:,2] = np.random.normal(5, 1, n)
-    # small
-    data[:smalls,3] = np.random.normal(6, 1, smalls)
-    data[smalls:,3] = np.random.normal(4, 2, n-smalls)
-    # big
-    data[:bigs,4] = np.random.normal(10, 3, bigs)
-    data[bigs:,4] = np.random.normal(25, 2.5, n-bigs)
-    # all
-    data[-all_high:,:] = np.random.normal(16, 0.3, (all_high, p))
+
+    a = np.random.uniform(0, 5, n)
+    b = np.random.uniform(0, 5, n)
+
+    circles = np.abs(a - b) <= a * 0.85
+    ellipses = np.logical_and(0.49 * a <= b, b <= 0.86 * a)
+    rectangles = np.logical_and(~circles, ~ellipses)
+
+    print np.sum(circles)
+    print np.sum(ellipses)
+    print np.sum(rectangles)
+
+    diag = np.sqrt(a**2 + b**2)
+    
+    # rectangles
+    data[:,0] = a
+    data[:,1] = b
+    data[:,2] = diag
+    data[:,3] = 2*a + 2*b
+    data[:,4] = a * b
+    
+    # circle
+    data[:,0] = a
+    data[:,1][circles] = a[circles]
+    data[:,2][circles] = a[circles]
+    data[:,3][circles] = np.pi * a[circles]
+    data[:,4][circles] = np.pi * (a[circles]/2)**2
+    
+    # ellipsis
+    t = np.pi / 4
+    cost = np.cos(t)
+    sint = np.sin(t)
+    x = a * cost
+    y = b * sint
+    data[:,1][ellipses] = 0.6938 * a[ellipses]
+    data[:,2][ellipses] = 2 * np.sqrt(x[ellipses]**2 + y[ellipses]**2)
+    data[:,3][ellipses] = 2 * np.pi * np.sqrt(0.5 * (a[ellipses]**2 + b[ellipses]**2))
+    data[:,4][ellipses] = np.pi * a[ellipses] * b[ellipses]
+
 
     df.write('properties;0\n')
-    df.write('parameters;{};gen0;gen1;gen2;small;big;all\n'.format(p))
+    df.write('parameters;{};major;minor;diag;len;surf\n'.format(p))
     for i in xrange(n):
         df.write(';'.join(map(fmt, data[i])) + '\n')
 
-
+c = np.zeros((n,3))
+c[:,0][rectangles] = 1
+c[:,1][circles] = 1
+c[:,2][ellipses] = 1
 f, ax = plt.subplots(2)
-ax[0].scatter(data[:,0], data[:,1], edgecolor=(0, 0, 0), s=3)
-ax[1].scatter(data[:,3], data[:,4], edgecolor=(0, 0, 0), s=3)
+ax[0].scatter(data[:,1], data[:,2], edgecolor='none', s=3, c=c)
 plt.show()
