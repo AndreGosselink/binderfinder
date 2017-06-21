@@ -45,11 +45,3 @@ if not '-noconsole' in sys.argv:
     print 'starting binderfinder ' + __version__  + ' ' + branch
     print 'using matplotlib ' + mpl.__version__
     print 'started with pid', os.getpid()
-    try:
-        os.system('hg branch')
-    except:
-        pass
-
-
-
-
