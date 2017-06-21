@@ -1,3 +1,3 @@
 from binderfinder import PCA
 
-p = PCA('./data/iris_dataset/iris.data')
+p = PCA('./data/mock_data_pca_rnd.csv', standardize=True)
