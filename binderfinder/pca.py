@@ -42,7 +42,8 @@ Input:
         ax[1].set_xticks(pcnum)
         ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
         ax[1].set_title('Proportion of Variance')
-
+        
+        print mlab_pca.Wt
         self.biplot_mlab(ax[2], mlab_pca.Y[:,0:2], mlab_pca.Wt[:,0:2], labels=parser.data_layout[parser.PARA_LABEL])
         
         f.tight_layout()
