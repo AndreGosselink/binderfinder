@@ -138,11 +138,12 @@ class Parser(object):
         binder = self.data.keys()
         linker = self.data[binder[0]].keys()
         data = [[] for i in xrange(self.data_layout[self.PARA_KEY])]
-
-        for b in binder:
-            for l in linker:
-                for i in xrange(self.data_layout[self.PARA_KEY]):
-                    data[i].append(self.data[b][l][i])
+        
+        dset = linker[0]
+        for b in xrange(len(binder)):
+            b = str(b)
+            for i in xrange(self.data_layout[self.PARA_KEY]):
+                data[i].append(self.data[b][dset][i])
 
         return binder, linker, np.asarray(data, float).T
 
