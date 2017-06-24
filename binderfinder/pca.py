@@ -43,10 +43,11 @@ Input:
             self._reduce = self.data.shape[0]
         elif reduce_to > self.data.shape[0]:
             raise ValueError('trying data reduction to more dimensions than in data space!')
-        
+        else:
+            self._reduce = reduce_to
+
         # standardize
         self.data = self._standardize_data(self.data)
-
 
         # print subset
         # for l, p in zip(parser.data_layout[parser.PARA_LABEL], subset):
@@ -60,9 +61,13 @@ Input:
 
         self._covMat = np.cov(self.data)
         self._eigenvals, self._eigenvecs = self._get_eigenpairs(self._covMat)
-        self._sortidx = np.argsort(self._eigenvals)
+        self._sortidx = sortidx = np.argsort(self._eigenvals)[::-1]
+
+        self._fVec = self._eigenvecs[sortidx][:self._reduce].T.squeeze()
 
         self._check_consistency()
+
+        self.pca_transform = self._transform()
         
         if debug and self.data.shape[0] == 2:
             print 'data'
@@ -75,14 +80,22 @@ Input:
             for val, vec in zip(self._eigenvals, self._eigenvecs):
                 plt.plot([0, vec[0] * val / scale_to], [0, vec[1] * val / scale_to])
             print 'eigenpairs'
-            sortidx = self._sortidx[::-1]
             for n, (val, vec) in enumerate(zip(self._eigenvals[sortidx],
                                               self._eigenvecs[sortidx])):
                 print 'PC{}'.format(n+1), val, vec
 
+            print 'featureVector'
+            print self._fVec
             plt.show()
 
-    def _get_eigenpairs(self, covMat):
+        plt.scatter(self.pca_transform[0], self.pca_transform[1])
+        plt.show()
+
+    def _transform(self):
+        pca_transform = np.dot(self._fVec.T, self.data)
+        return pca_transform
+
+    def _get_eigenpairs(self, False):
         m = covMat.shape[0]
         evals, evecs = np.linalg.eig(covMat)
         # for dup in eigenpairs:
@@ -112,6 +125,8 @@ Input:
             if not np.isclose(np.linalg.norm(vecs[i]), 1.0):
                 raise ValueError('Eigenvector {} is not normed...'.format(i))
         print 'all good'
+
+
         
 class Mlab_PCA(object):
     """
