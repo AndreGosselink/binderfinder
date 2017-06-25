@@ -145,7 +145,7 @@ Input:
 
         sortidx = self._sortidx
         pcnum = range(self._fVals.size)
-        ax[1].scatter(pcnum, self._fVals)
+        ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals))
         ax[1].set_xticks(pcnum)
         ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
         ax[1].set_title('Proportion of Variance')
