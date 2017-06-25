@@ -1,3 +1,11 @@
+"""
+Implemented according to:
+
+'A tutorial on Principal Components Analysis', Lindsay I Smith, 2002
+"""
+
+
+
 import numpy as np
 from matplotlib.mlab import PCA as mlabPCA
 import matplotlib.pyplot as plt
@@ -20,6 +28,7 @@ Input:
 
     def __init__(self, filename,
                  centering='mean',
+                 normalize=True,
                  reduce_to=-1,
                  figsize=(6, 11),
                  debug=False,
@@ -30,9 +39,12 @@ Input:
                       }
 
         self.debug = debug
+        self._normalize = normalize
+        self._figsize = figsize
         self._offset_func = offset_func[centering]
 
-        parser = Parser(filename)
+        self.parser = parser = Parser(filename)
+        self._filename = filename
         
         # parameter in columns, items in rows
         _, _, data = parser.get_pca_formatted()
@@ -49,25 +61,20 @@ Input:
         # standardize
         self.data = self._standardize_data(self.data)
 
-        # print subset
-        # for l, p in zip(parser.data_layout[parser.PARA_LABEL], subset):
-        #     print l, p, np.var(p, ddof=1)
-        # print 'mine'
-        # for r in covmat(*subset):
-        #     print (' {:> 3.5f}'*len(r)).format(*r)
-        # print 'numpy'
-        # for r in covMat:
-        #     print (' {:> 3.5f}'*len(r)).format(*r)
-
         self._covMat = np.cov(self.data)
         self._eigenvals, self._eigenvecs = self._get_eigenpairs(self._covMat)
         self._sortidx = sortidx = np.argsort(self._eigenvals)[::-1]
-
-        self._fVec = self._eigenvecs[sortidx][:self._reduce].T.squeeze()
+        # switch rows/cols
+        #TODO look at this... and....
+        self._fVecs = self._eigenvecs[sortidx][:self._reduce].squeeze()
+        self._fVals = self._eigenvals[sortidx][:self._reduce].squeeze()
 
         self._check_consistency()
 
-        self.pca_transform = self._transform()
+        self.pca_transform = self._transform(self.data)
+
+        # nornmalizing
+        self.pca_transform /= np.max(self.pca_transform)
         
         if debug and self.data.shape[0] == 2:
             print 'data'
@@ -75,29 +82,23 @@ Input:
             print 'covMat'
             print self._covMat
             
-            scale_to = np.max(self._eigenvals)
-            plt.scatter(self.data[0], self.data[1])
-            for val, vec in zip(self._eigenvals, self._eigenvecs):
-                plt.plot([0, vec[0] * val / scale_to], [0, vec[1] * val / scale_to])
             print 'eigenpairs'
             for n, (val, vec) in enumerate(zip(self._eigenvals[sortidx],
                                               self._eigenvecs[sortidx])):
                 print 'PC{}'.format(n+1), val, vec
 
             print 'featureVector'
-            print self._fVec
-            plt.show()
+            print self._fVecs
 
-        plt.scatter(self.pca_transform[0], self.pca_transform[1])
-        plt.show()
-
-    def _transform(self):
-        pca_transform = np.dot(self._fVec.T, self.data)
+    def _transform(self, data):
+        # rowx by row!
+        #TODO this here
+        pca_transform = np.dot(self._fVecs.T, data)
         return pca_transform
 
     def _get_eigenpairs(self, False):
-        m = covMat.shape[0]
-        evals, evecs = np.linalg.eig(covMat)
+        m = self._covMat.shape[0]
+        evals, evecs = np.linalg.eig(self._covMat)
         # for dup in eigenpairs:
         #     print '{:> 3.3f} -> ({:})'.format(dup[0], ', '.join(map('{:> 3.3f}'.format, dup[1])))
         # 
@@ -105,6 +106,11 @@ Input:
         return evals, evecs.T
 
     def _standardize_data(self, data):
+        if self._normalize:
+            data = data.copy() 
+            for i, p in enumerate(data):
+                data[i] /= np.max(p)
+
         m = data.shape[0]
         offsets = self._offset_func(data)
         # for broadcasting reasons
@@ -113,7 +119,7 @@ Input:
         return res
 
     def _check_consistency(self):
-        print 'checking eigenvector properties...'
+        print 'checking eigenvector properties...',
         m = self._covMat.shape[0]
         vecs = self._eigenvecs
         vals = self._eigenvals
@@ -124,8 +130,42 @@ Input:
                 raise ValueError('Eigenvector {} is odd...'.format(i))
             if not np.isclose(np.linalg.norm(vecs[i]), 1.0):
                 raise ValueError('Eigenvector {} is not normed...'.format(i))
-        print 'all good'
+        print 'all good!'
+    
+    def show(self):
+        f, ax = plt.subplots(2, figsize=self._figsize)
+        ax[0].scatter(*self.pca_transform[:2,:])
+        ax[0].set_xlim(-1.3, 1.3)
+        ax[0].set_ylim(-1.3, 1.3)
+        ax[0].set_xlabel('PC 1')
+        ax[0].set_ylabel('PC 2')
+        ax[0].set_title(self._filename + ' PCA')
 
+        self._draw_arrows(ax[0])
+
+        sortidx = self._sortidx
+        pcnum = range(self._fVals.size)
+        ax[1].scatter(pcnum, self._fVals)
+        ax[1].set_xticks(pcnum)
+        ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
+        ax[1].set_title('Proportion of Variance')
+        
+        f.tight_layout()
+        plt.show()
+
+    def _draw_arrows(self, ax):
+        n = self._reduce
+        # labels = [self.parser.data_layout[self.parser.PARA_LABEL][idx] for idx in self._sortidx]
+        labels = self.parser.data_layout[self.parser.PARA_LABEL]
+        unit_vecs = np.zeros((n, n), float)
+        for i in xrange(n):
+            unit_vecs[i, i] = 1
+        biplots = self._transform(unit_vecs.T)
+        for i in range(n):
+            # get vectors
+            tox, toy = biplots[:2, i]
+            ax.arrow(0, 0, tox, toy, color='r', alpha=0.5)
+            ax.text(tox * 1.15, toy * 1.15, labels[i], color='g', ha='center', va='center')
 
         
 class Mlab_PCA(object):
@@ -199,7 +239,7 @@ Input:
             # toy = bp[1] / max_to
             # not a real projection!
             ax.arrow(0, 0, tox, toy, color='r', alpha=0.5)
-            ax.text(tox * 1.15, toy * 1.15, labels[i], color='g', ha='center', va='center')
+            ax.text(tox * 1.1, toy * 1.1, labels[i], color='g', ha='center', va='center')
 
         ax.set_xlabel("PC{}".format(1))
         ax.set_ylabel("PC{}".format(2))
