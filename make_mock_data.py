@@ -89,67 +89,138 @@ import matplotlib.pyplot as plt
 # ax[0].scatter(data[:,1], data[:,2], edgecolor='none', s=3, c=c)
 # plt.show()
 
-def cov(X, Y):
-    if len(X) != len(Y):
-        raise ValueError('Inputs need same Dimensions')
-    mX = np.mean(X)
-    mY = np.mean(Y)
-    i = 0.0
-    s = 0.0
-    for xi, yi in zip(X, Y):
-        s += (xi - mX) * (yi - mY)
-        i += 1.0
-    return s / (i - 1.0)
+# def iterate_to(X, m, std, lower, upper):
+#     Y = np.random.normal(m, std, X.size)
+#     base = X.copy()
+#     best = np.cov(base, Y)[0, 1]
+#     tries = 0
+#     diff = 0
+#     misses = 0
+#     while not lower < best < upper:
+#         
+#         if diff < 0.0001:
+#             misses += 1
+# 
+#         if misses > 15000:
+#             Y = np.random.normal(m, std, X.size)
+#             best = np.cov(base, Y)[0, 1]
+#             tries = 0
+#             diff = 0
+#             misses = 0
+# 
+#         tries += 1
+#         i = np.random.randint(Y.size)
+#         j = np.random.randint(Y.size)
+# 
+#         y = np.random.randint(Y.size)
+#         Y[i], Y[j] = Y[j], Y[i]
+# 
+#         cur = np.cov(base, Y)[0, 1]
+#         if best > upper:
+#             better = cur < best
+#         elif best < lower:
+#             better = cur > best
+#         if not better:
+#             Y[i], Y[j] = Y[j], Y[i]
+#             diff = 0
+#             continue
+#         diff = np.abs(best-cur)
+#         best = cur
+#         print '\r{: 5d}: {:.5f}({:.5f}|{:> 5d})'.format(tries, best, diff, misses),
+#     print
+#     return Y
+# 
 
-def iterate_to(X, m, std, lower, upper):
-    Y = np.random.normal(m, std, X.size)
-    base = X.copy()
-    best = np.cov(base, Y)[0, 1]
-    misses = 0
-    max_tries = 10
+def iterate_data(params, base_a, cap1):
+    base_idx = params.index('base')
+    zero_idx = params.index('zero')
+    pos_idx = params.index('pos')
+    neg_idx = params.index('neg')
+    
+    x = np.linspace(-2, 2, n)
+
+    sig = gauss(x, base_a, 0, 1) + np.random.normal(0, base_a*0.03, n)
+    sig += gauss(x, base_a/3.0, 1, 0.2)
+    sig += gauss(x, base_a/2.0, 0, 0.15)
+    sig += 2*np.sin(x*np.pi)
+    var_sig = np.var(sig, ddof=1)
+
+    data = np.zeros((p, n), float)
+    
     tries = 0
-    while not lower < best < upper:
-        if misses > max_tries:
-            Y = np.random.normal(m, std, X.size)
-        tries += 1
-        i = np.random.randint(Y.size)
-        j = np.random.randint(Y.size)
+    zero_cap = np.inf
+    for idx, bv in enumerate(sig):
+        data[base_idx, idx] = bv
+        zero_ok = pos_ok = neg_ok0 = neg_ok1 = False
+        while 1:
+            tries += 1
+            if tries >= 5000:
+                return iterate_data(params, base_a, cap1)
+            print '\r{:> 3d} {:d} {:d} ({:d}, {:d}) ({:> 3.4f})'.format(idx, zero_ok, pos_ok, neg_ok0, neg_ok1, zero_cap),
+            if not pos_ok:
+                data[pos_idx, idx] = np.random.normal(bv, 1)
+            if not zero_ok:
+                data[zero_idx, idx] = np.random.normal(0, 3)
+            if not neg_ok0 or not neg_ok1:
+                data[neg_idx, idx] = np.random.normal(-bv, 1) 
 
-        y = np.random.randint(Y.size)
-        Y[i], Y[j] = Y[j], Y[i]
+            cov = np.cov(data)
+            base_var = cov[base_idx,base_idx]
 
-        cur = np.cov(base, Y)[0, 1]
-        if best > upper:
-            better = cur < best
-        elif best < lower:
-            better = cur > best
-        if not better:
-            Y[i], Y[j] = Y[j], Y[i]
-            continue
-            misses += 1
-        best = cur
-        print '\r{: 5d}({: 5d}): {:.5f}'.format(tries, misses, best),
-    print
-    return Y
+            dcap = -((base_var-cap1)/float(n-1))
+            zero_cap = dcap * idx + base_var
+
+            zero_ok = -zero_cap < cov[base_idx,zero_idx] < zero_cap
+            pos_ok = cov[base_idx,pos_idx] >= 0.99 * base_var
+            var_zn = cov[neg_idx,neg_idx] * zero_cap
+            neg_ok0 = cov[base_idx,neg_idx] <= -0.99 * base_var
+            neg_ok1 = -zero_cap < cov[neg_idx,zero_idx] < zero_cap
+
+            if zero_ok and pos_ok and neg_ok0 and neg_ok1:
+                break
+    return data
+
+def gauss(x, a, b, c):
+    return a * np.exp(-(x-b)**2 / c**2)
 
 with open('./data/mock_data_pca_rnd.csv', 'w') as df:
     n = 500
-    params = ['base', 'zero', 'neg', 'pos']
+    params = ['base', 'zero', 'pos', 'neg']
+    base_a = 5
     p = len(params)
     fmt = '{:.2f}'.format
-    data = np.zeros((n, p), float)
+    cap1 = 0.0001
 
-    base = np.random.normal(0, 1, n)
-    zero = iterate_to(base, 0, 1, 0.0, 0.0001)
-    pos = iterate_to(base, 0, 1, 0.97, 100)
-    neg = iterate_to(base, 0, 1, -100, -0.97)
+    data = iterate_data(params, base_a, cap1)
+    
+    cov = np.cov(data)
+    print
+    print cov
 
-    data[:,0] = base
-    data[:,1] = zero
-    data[:,2] = pos
-    data[:,3] = neg
+    f, ax = plt.subplots(4,4)
+    for i in xrange(4):
+        for j in xrange(4):
+            if i == 0:
+                ax[i,j].set_title(params[j])
+            if j == 0:
+                ax[i,j].set_ylabel(params[i])
 
+            ax[i,j].scatter(data[i], data[j], edgecolor='none')
+            ax[i,j].set_xlabel('{:.5f}'.format(cov[i,j]))
+
+    f.tight_layout()
+
+    f2, ax = plt.subplots(2,2)
+    ax[0,0].plot(data[0])
+    ax[0,1].plot(data[1])
+    ax[1,0].plot(data[2])
+    ax[1,1].plot(data[3])
+
+    data = data.T
+    
     df.write('properties;0\n')
     df.write('parameters;{};{}\n'.format(len(params), ';'.join(params)))
     for i in xrange(n):
         df.write(';'.join(map(fmt, data[i])) + '\n')
+
+    plt.show()
