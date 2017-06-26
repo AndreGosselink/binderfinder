@@ -39,7 +39,7 @@ Input:
                  centering='mean',
                  normalize=False,
                  reduce_to=-1,
-                 figsize=(13, 7),
+                 figsize=(),
                  debug=False,
                  portions=True,
                  annotate=False,
@@ -52,10 +52,15 @@ Input:
 
         self.debug = debug
         self._normalize = normalize
-        self._figsize = figsize
         self._offset_func = offset_func[centering]
         self._portions = portions
         self._annotate = annotate
+
+        if figsize == () and portions:
+            self._figsize = (13, 7)
+        else:
+            self._figsize = (7, 6.5)
+
 
         self.parser = parser = Parser(filename)
         self._filename = filename
@@ -200,7 +205,7 @@ Input:
         f.tight_layout()
 
         if self._annotate:
-            self._annotate_plot(ax[0])
+            self._annotate_plot(arrow_ax)
 
         plt.show()
 
