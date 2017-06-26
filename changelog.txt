@@ -1,4 +1,10 @@
-Version 1.35 dev
+Version 1.42 dev
+
+Version 1.41
+-default not normalizing data
+-removed scaling of pca_transform
+-Fixed scaling Bug
+-a bit doku
 
 Version 1.4
 -own pca implementation
