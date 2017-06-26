@@ -1,7 +1,8 @@
-Version 1.34 dev
--fixed ordering of params by variance
--fixed plotting of biplot vectors
-ISSUE: Not scaling is broken
+Version 1.35 dev
+
+Version 1.4
+-own pca implementation
+ISSUE: Not scaling is broken (correct raitios but seems to be scaled to max(data))
 
 Version 1.33
 -made PCA aware of older mlab.PCA implementations and handle it
