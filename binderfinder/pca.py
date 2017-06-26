@@ -15,6 +15,7 @@ from errors import DeprecatedDependency
 import warnings
 import os
 from misc import covmat
+from . import __version__
 
 
 class PCA(object):
@@ -202,6 +203,7 @@ Input:
             arrow_ax = ax
 
         self._draw_arrows(arrow_ax, scale_to)
+        f.canvas.set_window_title('binderfinder PCA {} -- {}'.format(__version__, self._filename))
         f.tight_layout()
 
         if self._annotate:
