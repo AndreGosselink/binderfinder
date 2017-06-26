@@ -193,7 +193,6 @@ Input:
             ax.set_title(self._filename + ' PCA')
             arrow_ax = ax
 
-        print scale_to
         self._draw_arrows(arrow_ax, scale_to)
         f.tight_layout()
 
