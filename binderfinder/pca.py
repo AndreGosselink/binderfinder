@@ -32,6 +32,7 @@ Input:
                  reduce_to=-1,
                  figsize=(4.5, 7),
                  debug=False,
+                 portions=True,
                 ):
 
         offset_func = {  'mean': lambda dat: np.mean(dat, axis=1),
@@ -42,6 +43,7 @@ Input:
         self._normalize = normalize
         self._figsize = figsize
         self._offset_func = offset_func[centering]
+        self._portions = portions
 
         self.parser = parser = Parser(filename)
         self._filename = filename
@@ -141,31 +143,51 @@ Input:
         print 'all good!'
     
     def show(self):
-        f, ax = plt.subplots(2, figsize=self._figsize)
-        ax[0].scatter(*self.pca_transform[:2,:])
-        if self._normalize:
-            ax[0].set_xlim(-1.3, 1.3)
-            ax[0].set_ylim(-1.3, 1.3)
+        if self._portions:
+            f, ax = plt.subplots(2, figsize=self._figsize)
+            ax[0].scatter(*self.pca_transform[:2,:])
+            if self._normalize:
+                ax[0].set_xlim(-1.3, 1.3)
+                ax[0].set_ylim(-1.3, 1.3)
+            else:
+                xmin, xmax = map(lambda f: f(self.pca_transform[0,:]), [np.min, np.max])
+                ymin, ymax = map(lambda f: f(self.pca_transform[1,:]), [np.min, np.max])
+                # ax[0].set_xlim(xmin, xmax)
+                # ax[0].set_ylim(ymin, ymax)
+
+            ax[0].set_xlabel('PC 1')
+            ax[0].set_ylabel('PC 2')
+            ax[0].set_title(self._filename + ' PCA')
+
+            self._draw_arrows(ax[0])
+
+            sortidx = self._sortidx
+            pcnum = range(self._fVals.size)
+            ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals))
+            ax[1].set_xticks(pcnum)
+            ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
+            ax[1].set_title('Proportion of Variance')
+            
+            f.tight_layout()
         else:
-            xmin, xmax = map(lambda f: f(self.pca_transform[0,:]), [np.min, np.max])
-            ymin, ymax = map(lambda f: f(self.pca_transform[1,:]), [np.min, np.max])
-            # ax[0].set_xlim(xmin, xmax)
-            # ax[0].set_ylim(ymin, ymax)
+            f, ax = plt.subplots(1, figsize=self._figsize)
+            ax.scatter(*self.pca_transform[:2,:])
+            if self._normalize:
+                ax.set_xlim(-1.3, 1.3)
+                ax.set_ylim(-1.3, 1.3)
+            else:
+                xmin, xmax = map(lambda f: f(self.pca_transform[0,:]), [np.min, np.max])
+                ymin, ymax = map(lambda f: f(self.pca_transform[1,:]), [np.min, np.max])
+                # ax[0].set_xlim(xmin, xmax)
+                # ax[0].set_ylim(ymin, ymax)
 
-        ax[0].set_xlabel('PC 1')
-        ax[0].set_ylabel('PC 2')
-        ax[0].set_title(self._filename + ' PCA')
+            ax.set_xlabel('PC 1')
+            ax.set_ylabel('PC 2')
+            ax.set_title(self._filename + ' PCA')
 
-        self._draw_arrows(ax[0])
+            self._draw_arrows(ax)
 
-        sortidx = self._sortidx
-        pcnum = range(self._fVals.size)
-        ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals))
-        ax[1].set_xticks(pcnum)
-        ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
-        ax[1].set_title('Proportion of Variance')
-        
-        f.tight_layout()
+            f.tight_layout()
         plt.show()
 
     def _draw_arrows(self, ax):
@@ -191,81 +213,3 @@ Input:
             ax.arrow(0, 0, tox, toy, color='r', alpha=0.5)
             ax.text(tox * 1.15, toy * 1.15, labels[i], color='g', ha='center', va='center')
 
-        
-class Mlab_PCA(object):
-    """
-Input:
-------------------------
- filename: path to csv file, containing parsable data
-
- standardize: True if input data are to be standardized. If False, only centering will be carried out.
- """
-
-    def __init__(self, filename, standardize=True, figsize=(6, 11)):
-
-        parser = Parser(filename)
-
-        _, _, data = parser.get_pca_formatted()
-
-        try:
-            mlab_pca = mlabPCA(data, standardize)
-        except Exception as e:
-            print e
-            warnings.warn('Please consider updating matplotlib. Unexpected call signatur for PCA', DeprecatedDependency)                    
-            mlab_pca = mlabPCA(data, standardize)
-
-        f, ax = plt.subplots(3, figsize=figsize)
-        ax[0].plot(mlab_pca.Y[:,0], mlab_pca.Y[:,1], 'o', markersize=7, alpha=0.5)
-        #
-        ax[0].set_xlabel('PC 1')
-        ax[0].set_ylabel('PC 2')
-        ax[0].set_title(filename + ' PCA')
-        
-        pcnum = range(len(mlab_pca.fracs))
-        ax[1].scatter(pcnum, mlab_pca.fracs)
-        ax[1].set_xticks(pcnum)
-        ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
-        ax[1].set_title('Proportion of Variance')
-
-        self.biplot_mlab(ax[2], mlab_pca.Y[:,0:2], mlab_pca, labels=parser.data_layout[parser.PARA_LABEL])
-        
-        f.tight_layout()
-        plt.show()
-
-    def biplot_mlab(self, ax, score, mlab_pca, labels):
-        xs = score[:,0]
-        ys = score[:,1]
-        coeff = mlab_pca.Wt
-        n = coeff.shape[0]
-
-        # n = mlab_pca.Wt.shape[0]
-        unit_vectors = np.zeros((n, n), float)
-        for i in xrange(n):
-            unit_vectors[i, i] = 1
-
-        print unit_vectors
-        unit_vectors = mlab_pca.center(unit_vectors)
-        print unit_vectors
-
-        bivectors = mlab_pca.project(unit_vectors)
-
-        max_val = np.max([xs.max(), ys.max()])
-        max_to = np.max(np.sqrt(np.sum(bivectors**2, axis=0)))
-        ax.scatter(xs/max_val, ys/max_val)
-
-        for i in range(n):
-            # get vectors
-            # v = np.zeros(mlab_pca.Wt.shape[1])
-            # v[i] = 1
-            tox, toy = bivectors[i, :2] / max_to
-            # bp = mlab_pca.project(v)
-
-            # tox = bp[0] / max_to
-            # toy = bp[1] / max_to
-            # not a real projection!
-            ax.arrow(0, 0, tox, toy, color='r', alpha=0.5)
-            ax.text(tox * 1.1, toy * 1.1, labels[i], color='g', ha='center', va='center')
-
-        ax.set_xlabel("PC{}".format(1))
-        ax.set_ylabel("PC{}".format(2))
-        ax.set_title('Biplot')

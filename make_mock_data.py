@@ -1,6 +1,7 @@
 import random as rnd
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # with open('./data/mock_data.csv', 'w') as df:
 #     df.write('properties;2\n')
@@ -136,13 +137,17 @@ def iterate_data(params, base_a, cap1):
     zero_idx = params.index('zero')
     pos_idx = params.index('pos')
     neg_idx = params.index('neg')
+    half_idx = params.index('half')
+    feat_idx = params.index('feat')
     
     x = np.linspace(-2, 2, n)
 
-    sig = gauss(x, base_a, 0, 1) + np.random.normal(0, base_a*0.03, n)
+    sig = gauss(x, base_a, -1, 1.5) + np.random.normal(0, base_a*0.03, n)
     sig += gauss(x, base_a/3.0, 1, 0.2)
-    sig += gauss(x, base_a/2.0, 0, 0.15)
+    sig += gauss(x, base_a*1.2, -1.75, 0.4)
+    sig -= gauss(x, base_a, -1.5, 0.8)
     sig += 2*np.sin(x*np.pi)
+    sig += x**2
     var_sig = np.var(sig, ddof=1)
 
     data = np.zeros((p, n), float)
@@ -151,32 +156,40 @@ def iterate_data(params, base_a, cap1):
     zero_cap = np.inf
     for idx, bv in enumerate(sig):
         data[base_idx, idx] = bv
-        zero_ok = pos_ok = neg_ok0 = neg_ok1 = False
+        zero_ok = pos_ok = neg_ok0 = neg_ok1 = half_ok = feat_ok = False
         while 1:
             tries += 1
             if tries >= 5000:
+                if idx >= 491: break
                 return iterate_data(params, base_a, cap1)
-            print '\r{:> 3d} {:d} {:d} ({:d}, {:d}) ({:> 3.4f})'.format(idx, zero_ok, pos_ok, neg_ok0, neg_ok1, zero_cap),
+            print '\r{:> 3d} {:d} {:d} ({:d}, {:d}) {:d} {:d} ({:> 3.4f})'.format(idx, zero_ok, pos_ok, neg_ok0, neg_ok1, half_ok, feat_ok, zero_cap),
+            if not half_ok:
+                data[half_idx, idx] = np.random.normal(bv*0.3, 0.5)
             if not pos_ok:
-                data[pos_idx, idx] = np.random.normal(bv, 1)
+                data[pos_idx, idx] = np.random.normal(bv, 0.8)
             if not zero_ok:
                 data[zero_idx, idx] = np.random.normal(0, 3)
             if not neg_ok0 or not neg_ok1:
-                data[neg_idx, idx] = np.random.normal(-bv, 1) 
+                data[neg_idx, idx] = np.random.normal(-bv, 0.8) 
+            if not feat_ok:
+                data[feat_idx, idx] = np.sin(idx * 6.5*np.pi/500) * base_a/2 + np.random.normal(0, 2) + gauss(idx, base_a/3.0, 1, 0.2)
 
             cov = np.cov(data)
             base_var = cov[base_idx,base_idx]
 
             dcap = -((base_var-cap1)/float(n-1))
             zero_cap = dcap * idx + base_var
+            soft_cap = zero_cap * 100
 
             zero_ok = -zero_cap < cov[base_idx,zero_idx] < zero_cap
             pos_ok = cov[base_idx,pos_idx] >= 0.99 * base_var
             var_zn = cov[neg_idx,neg_idx] * zero_cap
             neg_ok0 = cov[base_idx,neg_idx] <= -0.99 * base_var
             neg_ok1 = -zero_cap < cov[neg_idx,zero_idx] < zero_cap
+            half_ok = 0.2 * base_var < cov[base_idx,half_idx] < 0.3 * base_var
+            feat_ok = -soft_cap < cov[feat_idx,zero_idx] < soft_cap and -soft_cap < cov[feat_idx,pos_idx] < soft_cap and -soft_cap < cov[feat_idx,neg_idx] < soft_cap
 
-            if zero_ok and pos_ok and neg_ok0 and neg_ok1:
+            if zero_ok and pos_ok and neg_ok0 and neg_ok1 and half_ok and feat_ok:
                 break
     return data
 
@@ -184,43 +197,57 @@ def gauss(x, a, b, c):
     return a * np.exp(-(x-b)**2 / c**2)
 
 with open('./data/mock_data_pca_rnd.csv', 'w') as df:
-    n = 500
-    params = ['base', 'zero', 'pos', 'neg']
-    base_a = 5
-    p = len(params)
-    fmt = '{:.2f}'.format
-    cap1 = 0.0001
+    with open('./data/mock_data_pca_sk.csv', 'w') as df2:
+        n = 500
+        params = ['base', 'zero', 'pos', 'neg', 'half', 'feat']
+        base_a = 5
+        p = len(params)
+        fmt = '{:.2f}'.format
+        cap1 = 0.0001
 
-    data = iterate_data(params, base_a, cap1)
-    
-    cov = np.cov(data)
-    print
-    print cov
+        data = iterate_data(params, base_a, cap1)
+        
+        cov = np.cov(data)
+        print
+        for r in cov:
+            print ' '.join(map('{:> 3.5f}'.format, r))
 
-    f, ax = plt.subplots(4,4)
-    for i in xrange(4):
-        for j in xrange(4):
-            if i == 0:
-                ax[i,j].set_title(params[j])
-            if j == 0:
-                ax[i,j].set_ylabel(params[i])
+        f, ax = plt.subplots(6,6)
+        for i in xrange(6):
+            for j in xrange(6):
+                if i == 0:
+                    ax[i,j].set_title(params[j])
+                if j == 0:
+                    ax[i,j].set_ylabel(params[i])
 
-            ax[i,j].scatter(data[i], data[j], edgecolor='none')
-            ax[i,j].set_xlabel('{:.5f}'.format(cov[i,j]))
+                ax[i,j].scatter(data[i], data[j], edgecolor='none', s=1)
+                ax[i,j].set_xlabel('{:.5f}'.format(cov[i,j]))
 
-    f.tight_layout()
+        f.tight_layout()
 
-    f2, ax = plt.subplots(2,2)
-    ax[0,0].plot(data[0])
-    ax[0,1].plot(data[1])
-    ax[1,0].plot(data[2])
-    ax[1,1].plot(data[3])
+        f2, ax = plt.subplots(3,2)
+        ax[0,0].plot(data[0])
+        ax[0,1].plot(data[1])
+        ax[1,0].plot(data[2])
+        ax[1,1].plot(data[3])
+        ax[2,0].plot(data[4])
+        ax[2,1].plot(data[5])
+        
+        d0, d1, d2 = 0, 2, 5
+        fig = plt.figure()
+        ax3d = fig.add_subplot(111, projection='3d')
+        ax3d.scatter(data[d0], data[d1], data[d2])
+        ax3d.set_xlabel(params[d0])
+        ax3d.set_ylabel(params[d1])
+        ax3d.set_zlabel(params[d2])
 
-    data = data.T
-    
-    df.write('properties;0\n')
-    df.write('parameters;{};{}\n'.format(len(params), ';'.join(params)))
-    for i in xrange(n):
-        df.write(';'.join(map(fmt, data[i])) + '\n')
+        data = data.T
+        
+        df.write('properties;0\n')
+        df.write('parameters;{};{}\n'.format(len(params), ';'.join(params)))
+        df2.write('{}\n'.format(';'.join(params)))
+        for i in xrange(n):
+            df.write(';'.join(map(fmt, data[i])) + '\n')
+            df2.write(';'.join(map(fmt, data[i])) + '\n')
 
-    plt.show()
+        plt.show()
