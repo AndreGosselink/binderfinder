@@ -90,14 +90,12 @@ Input:
         self._fVecs = self._eigenvecs[sortidx][:self._reduce].T.squeeze()
         self._fVals = self._eigenvals[sortidx][:self._reduce].T.squeeze()
 
-        self._check_consistency()
-
         self.pca_transform = self._transform(self.data)
 
         # # nornmalizing
         # self.pca_transform /= np.max(self.pca_transform)
         
-        if debug and self.data.shape[0] == 2:
+        if debug:
             print 'data'
             print self.data
             print 'covMat'
@@ -110,6 +108,8 @@ Input:
 
             print 'featureVector'
             print self._fVecs
+
+        self._check_consistency()
 
     def _transform(self, data):
         # rowx by row!
@@ -151,7 +151,10 @@ Input:
             is_close = np.all(np.isclose((np.dot(self._covMat,
                 vecs[i]) / vals[i]), vecs[i]))
             if not is_close:
-                raise ValueError('Eigenvector {} is odd...'.format(i))
+                print '\n\ndim\tis\t\tought\t\tdiff\t\tpass'
+                for i, (v, r) in enumerate(zip(np.dot(self._covMat, vecs[i]) / vals[i], vecs[i])):
+                    print '{:d}\t{: 2.3e}\t{: 2.3e}\t{: 2.3e}\t{:}'.format(i, v, r, v-r, np.isclose(v, r))
+                raise ValueError('Eigenvector {} is odd, Try normalize=True'.format(i))
             if not np.isclose(np.linalg.norm(vecs[i]), 1.0):
                 raise ValueError('Eigenvector {} is not normed...'.format(i))
         if self.debug:

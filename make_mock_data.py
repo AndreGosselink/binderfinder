@@ -139,6 +139,7 @@ def iterate_data(params, base_a, cap1):
     neg_idx = params.index('neg')
     half_idx = params.index('half')
     feat_idx = params.index('feat')
+    inter_idx = params.index('inter')
     
     x = np.linspace(-2, 2, n)
 
@@ -156,13 +157,13 @@ def iterate_data(params, base_a, cap1):
     zero_cap = np.inf
     for idx, bv in enumerate(sig):
         data[base_idx, idx] = bv
-        zero_ok = pos_ok = neg_ok0 = neg_ok1 = half_ok = feat_ok = False
+        zero_ok = pos_ok = neg_ok0 = neg_ok1 = half_ok = feat_ok = inter_ok = False
         while 1:
             tries += 1
             if tries >= 5000:
                 if idx >= 491: break
                 return iterate_data(params, base_a, cap1)
-            print '\r{:> 3d} {:d} {:d} ({:d}, {:d}) {:d} {:d} ({:> 3.4f})'.format(idx, zero_ok, pos_ok, neg_ok0, neg_ok1, half_ok, feat_ok, zero_cap),
+            print '\r{:> 3d} {:d} {:d} ({:d}, {:d}) {:d} {:d} {:d} ({:> 3.4f})'.format(idx, zero_ok, pos_ok, neg_ok0, neg_ok1, half_ok, feat_ok, inter_ok, zero_cap),
             if not half_ok:
                 data[half_idx, idx] = np.random.normal(bv*0.3, 0.5)
             if not pos_ok:
@@ -173,9 +174,14 @@ def iterate_data(params, base_a, cap1):
                 data[neg_idx, idx] = np.random.normal(-bv, 0.8) 
             if not feat_ok:
                 data[feat_idx, idx] = np.sin(idx * 6.5*np.pi/500) * base_a/2 + np.random.normal(0, 2) + gauss(idx, base_a/3.0, 1, 0.2)
+            if not inter_ok:
+                data[inter_idx, idx] = np.random.normal((data[feat_idx,idx]+data[half_idx,idx])/2.0, 3) 
 
             cov = np.cov(data)
             base_var = cov[base_idx,base_idx]
+            half_var = cov[half_idx,half_idx]
+            zero_var = cov[zero_idx,zero_idx]
+            feat_var = cov[feat_idx,feat_idx]
 
             dcap = -((base_var-cap1)/float(n-1))
             zero_cap = dcap * idx + base_var
@@ -188,8 +194,9 @@ def iterate_data(params, base_a, cap1):
             neg_ok1 = -zero_cap < cov[neg_idx,zero_idx] < zero_cap
             half_ok = 0.2 * base_var < cov[base_idx,half_idx] < 0.3 * base_var
             feat_ok = -soft_cap < cov[feat_idx,zero_idx] < soft_cap and -soft_cap < cov[feat_idx,pos_idx] < soft_cap and -soft_cap < cov[feat_idx,neg_idx] < soft_cap
+            inter_ok = cov[inter_idx,half_idx] > 0.95 * half_var - (zero_cap/2.0) and 0.7 * feat_var < cov[inter_idx,feat_idx] < 0.8 * feat_var and cov[inter_idx,zero_idx] < soft_cap
 
-            if zero_ok and pos_ok and neg_ok0 and neg_ok1 and half_ok and feat_ok:
+            if zero_ok and pos_ok and neg_ok0 and neg_ok1 and half_ok and feat_ok and inter_ok:
                 break
     return data
 
@@ -199,7 +206,7 @@ def gauss(x, a, b, c):
 with open('./data/mock_data_pca_rnd.csv', 'w') as df:
     with open('./data/mock_data_pca_sk.csv', 'w') as df2:
         n = 500
-        params = ['base', 'zero', 'pos', 'neg', 'half', 'feat']
+        params = ['base', 'zero', 'pos', 'neg', 'half', 'feat', 'inter']
         base_a = 5
         p = len(params)
         fmt = '{:.2f}'.format
@@ -225,13 +232,14 @@ with open('./data/mock_data_pca_rnd.csv', 'w') as df:
 
         f.tight_layout()
 
-        f2, ax = plt.subplots(3,2)
+        f2, ax = plt.subplots(3,3)
         ax[0,0].plot(data[0])
         ax[0,1].plot(data[1])
-        ax[1,0].plot(data[2])
-        ax[1,1].plot(data[3])
-        ax[2,0].plot(data[4])
-        ax[2,1].plot(data[5])
+        ax[0,2].plot(data[2])
+        ax[1,0].plot(data[3])
+        ax[1,1].plot(data[4])
+        ax[1,2].plot(data[5])
+        ax[2,0].plot(data[6])
         
         d0, d1, d2 = 0, 2, 5
         fig = plt.figure()
