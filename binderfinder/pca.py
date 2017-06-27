@@ -187,7 +187,7 @@ Input:
             ax[0].set_ylim(absmin, absmax)
             ax[0].set_xlabel('PC 1')
             ax[0].set_ylabel('PC 2')
-            ax[0].set_title(self._filename + ' PCA')
+            ax[0].set_title('PCA/BiPlot')
             arrow_ax = ax[0]
 
             ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals))
@@ -214,6 +214,7 @@ Input:
         if self._covplot:
             n = self.data.shape[0]
             fcp, ax = plt.subplots(n, n, sharex=True, sharey=True)
+            fcp.canvas.set_window_title('binderfinder CovPlot {} -- {}'.format(__version__, self._filename))
             fcp.subplots_adjust(hspace=0, wspace=0)
             for i in xrange(n):
                 for j in xrange(n):

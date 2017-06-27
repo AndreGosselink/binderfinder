@@ -1,4 +1,5 @@
-Version 1.44 dev
+Version 1.5
+-added covplot
 
 Version 1.43
 -errohandling vor to huge variation of magnitudes in parameter
