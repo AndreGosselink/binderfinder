@@ -43,6 +43,7 @@ Input:
                  debug=False,
                  portions=True,
                  annotate=False,
+                 covplot=False,
                 ):
 
         offset_func = {  'mean': lambda dat: np.mean(dat, axis=1),
@@ -56,6 +57,8 @@ Input:
         self._offset_func = offset_func[centering]
         self._portions = portions
         self._annotate = annotate
+
+        self._covplot = covplot
 
         self.parser = parser = Parser(filename)
         self._filename = filename
@@ -75,7 +78,7 @@ Input:
         if reduce_to == -1:
             self._reduce = self.data.shape[0]
         elif reduce_to > self.data.shape[0]:
-            raise ValueError('trying data reduction to more dimensions than in data space!')
+            raise ValueError('trying data reduction to more dimensions than available in data space!')
         else:
             self._reduce = reduce_to
 
@@ -199,6 +202,20 @@ Input:
         if self._annotate:
             self._annotate_plot(ax[0])
 
+        if self._covplot:
+            n = self.data.shape[0]
+            fcp, ax = plt.subplots(n, n, sharex=True, sharey=True)
+            fcp.subplots_adjust(hspace=0, wspace=0)
+            for i in xrange(n):
+                for j in xrange(n):
+                    if i == 0:
+                        ax[i, j].set_title(self._labels[j])
+                    if j == 0:
+                        ax[i, j].set_ylabel(self._labels[i])
+                    ax[i, j].scatter(self.data[j], self.data[i], edgecolor='none', s=1)
+
+
+
         plt.show()
 
     def _draw_arrows(self, ax, scale_to):
@@ -232,5 +249,3 @@ Input:
         offset = np.max([pc0, pc1])*0.03
         for idx, (x, y) in enumerate(zip(pc0, pc1)):
             ax.text(x, y+offset, str(idx), color=[0.0, 0.0, 0.0, 0.5], ha='center', va='center', size='xx-small')
-
-

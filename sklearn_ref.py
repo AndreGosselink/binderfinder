@@ -6,10 +6,10 @@ import numpy as np
 ## import data
 
 # my_csv = './data/mock_data_script_sk.csv' ## path to your dataset
-# my_csv = './data/iris_dataset/iris_sk.data' ## path to your dataset
-my_csv = './data/mock_data_pca_sk.csv' ## path to your dataset
+my_csv = './data/iris_dataset/iris_sk.data' ## path to your dataset
+# my_csv = './data/mock_data_pca_sk.csv' ## path to your dataset
 
-dat = pd.read_csv(my_csv, sep=';', usecols=xrange(6))
+dat = pd.read_csv(my_csv, sep=';', usecols=xrange(4))
 # if no row or column titles in your csv, pass 'header=None' into read_csv
 # and delete 'index_col=0' -- but your biplot will be clearer with row/col names
 
