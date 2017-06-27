@@ -1,6 +1,10 @@
-Version 1.42 dev
+Version 1.44 dev
 
-Version 1.41
+Version 1.43
+-errohandling vor to huge variation of magnitudes in parameter
+-fixed portions=False bug
+
+Version 1.42
 -default not normalizing data
 -removed scaling of pca_transform
 -Fixed scaling Bug

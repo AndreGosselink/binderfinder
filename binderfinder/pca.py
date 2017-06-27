@@ -15,6 +15,7 @@ from errors import DeprecatedDependency
 import warnings
 import os
 from misc import covmat
+from . import __version__
 
 
 class PCA(object):
@@ -39,7 +40,7 @@ Input:
                  centering='mean',
                  normalize=False,
                  reduce_to=-1,
-                 figsize=(13, 7),
+                 figsize=(),
                  debug=False,
                  portions=True,
                  annotate=False,
@@ -53,12 +54,15 @@ Input:
 
         self.debug = debug
         self._normalize = normalize
-        self._figsize = figsize
         self._offset_func = offset_func[centering]
         self._portions = portions
         self._annotate = annotate
 
-        self._covplot = covplot
+        if figsize == () and portions:
+            self._figsize = (13, 7)
+        else:
+            self._figsize = (7, 6.5)
+
 
         self.parser = parser = Parser(filename)
         self._filename = filename
@@ -93,8 +97,6 @@ Input:
         self._fVecs = self._eigenvecs[sortidx][:self._reduce].T.squeeze()
         self._fVals = self._eigenvals[sortidx][:self._reduce].T.squeeze()
 
-        self._check_consistency()
-
         self.pca_transform = self._transform(self.data)
 
         # # nornmalizing
@@ -113,6 +115,8 @@ Input:
 
             print 'featureVector'
             print self._fVecs
+
+        self._check_consistency()
 
     def _transform(self, data):
         # rowx by row!
@@ -154,7 +158,10 @@ Input:
             is_close = np.all(np.isclose((np.dot(self._covMat,
                 vecs[i]) / vals[i]), vecs[i]))
             if not is_close:
-                raise ValueError('Eigenvector {} is odd...'.format(i))
+                print '\n\ndim\tis\t\tought\t\tdiff\t\tpass'
+                for i, (v, r) in enumerate(zip(np.dot(self._covMat, vecs[i]) / vals[i], vecs[i])):
+                    print '{:d}\t{: 2.3e}\t{: 2.3e}\t{: 2.3e}\t{:}'.format(i, v, r, v-r, np.isclose(v, r))
+                raise ValueError('Eigenvector {} is odd, Try normalize=True'.format(i))
             if not np.isclose(np.linalg.norm(vecs[i]), 1.0):
                 raise ValueError('Eigenvector {} is not normed...'.format(i))
         if self.debug:
@@ -197,10 +204,11 @@ Input:
             arrow_ax = ax
 
         self._draw_arrows(arrow_ax, scale_to)
+        f.canvas.set_window_title('binderfinder PCA {} -- {}'.format(__version__, self._filename))
         f.tight_layout()
 
         if self._annotate:
-            self._annotate_plot(ax[0])
+            self._annotate_plot(arrow_ax)
 
         if self._covplot:
             n = self.data.shape[0]

@@ -283,7 +283,7 @@ as described.
             self._matpatches = []
             self.fig = self._matax.figure
             self.fig.tight_layout()
-            self.fig.canvas.set_window_title('binderfinder {} -- {}'.format(__version__, self.filename))
+            self.fig.canvas.set_window_title('binderfinder Matrix {} -- {}'.format(__version__, self.filename))
             self.fig.subplots_adjust(top=0.90)
             # self.fig.suptitle(self.filename)
             plt.figtext(0.07, 0.03, self.filename)
