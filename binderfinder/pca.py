@@ -58,11 +58,12 @@ Input:
         self._portions = portions
         self._annotate = annotate
 
+        self._covplot = covplot
+
         if figsize == () and portions:
             self._figsize = (13, 7)
         else:
             self._figsize = (7, 6.5)
-
 
         self.parser = parser = Parser(filename)
         self._filename = filename
