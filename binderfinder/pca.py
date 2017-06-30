@@ -45,6 +45,8 @@ Input:
                  portions=True,
                  annotate=False,
                  covplot=False,
+                 last_col='data',
+                 show_class=(),
                 ):
 
         offset_func = {  'mean': lambda dat: np.mean(dat, axis=1),
@@ -73,6 +75,27 @@ Input:
         self._labels = np.array(parser.data_layout[parser.PARA_LABEL])
         #!---> parameter in rows, items in columns!
         self.data = data.T
+
+        self._colors = np.zeros((self.data[-1].size, 3), float)
+        self._colors[:,2] = 1
+
+        if last_col == 'class':
+            if show_class == ():
+                show_class = set([])
+                for v in data[-1]:
+                    show_class.add(v)
+            
+            for c in show_class:
+                rgb = np.random.random(3).reshape(1, 3)
+                self._colors[self.data[-1] == c] = rgb
+
+            self.data = self.data[:-1]
+
+        elif last_col == 'data':
+            pass
+        else:
+            raise ValueError("last_col must be 'data' or 'class'")
+
 
         # sorting dat by variance
         variances = np.var(self.data, ddof=1, axis=1)
@@ -182,7 +205,7 @@ Input:
 
         if self._portions:
             f, ax = plt.subplots(1, 2, figsize=self._figsize)
-            ax[0].scatter(*self.pca_transform[:2,:])
+            ax[0].scatter(*self.pca_transform[:2,:], edgecolor='none', color=self._colors)
             ax[0].set_xlim(absmin, absmax)
             ax[0].set_ylim(absmin, absmax)
             ax[0].set_xlabel('PC 1')
@@ -190,13 +213,13 @@ Input:
             ax[0].set_title('PCA/BiPlot')
             arrow_ax = ax[0]
 
-            ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals))
+            ax[1].scatter(pcnum, self._fVals / np.sum(self._fVals), edgecolor='none')
             ax[1].set_xticks(pcnum)
             ax[1].set_xticklabels(['PC{}'.format(i+1) for i in pcnum])
             ax[1].set_title('Proportion of Variance')
         else:
             f, ax = plt.subplots(1, figsize=self._figsize)
-            ax.scatter(*self.pca_transform[:2,:])
+            ax.scatter(*self.pca_transform[:2,:], edgecolor='none')
             ax.set_xlim(absmin, absmax)
             ax.set_ylim(absmin, absmax)
             ax.set_xlabel('PC 1')
@@ -222,8 +245,7 @@ Input:
                         ax[i, j].set_title(self._labels[j])
                     if j == 0:
                         ax[i, j].set_ylabel(self._labels[i])
-                    ax[i, j].scatter(self.data[j], self.data[i], edgecolor='none', s=1)
-
+                    ax[i, j].scatter(self.data[j], self.data[i], edgecolor='none', s=1, color=self._colors)
 
 
         plt.show()
