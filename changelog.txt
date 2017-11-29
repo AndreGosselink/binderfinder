@@ -1,4 +1,6 @@
 Version 1.51 DEV
+-added sorting for covplot
+-removed full pathname from window title, because it prevented saving plots via gui
 
 Version 1.50
 -added covplot

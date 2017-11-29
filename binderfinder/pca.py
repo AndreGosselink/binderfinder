@@ -16,6 +16,7 @@ import warnings
 import os
 from misc import covmat
 from . import __version__
+import IPython as ip
 
 
 class PCA(object):
@@ -45,6 +46,8 @@ Input:
                  portions=True,
                  annotate=False,
                  covplot=False,
+                 covorder=[],
+                 class_idx=None,
                 ):
 
         offset_func = {  'mean': lambda dat: np.mean(dat, axis=1),
@@ -59,6 +62,9 @@ Input:
         self._annotate = annotate
 
         self._covplot = covplot
+        self._covorder = covorder
+
+        self._class_idx = class_idx
 
         if figsize == () and portions:
             self._figsize = (13, 7)
@@ -72,7 +78,19 @@ Input:
         _, _, data = parser.get_pca_formatted()
         self._labels = np.array(parser.data_layout[parser.PARA_LABEL])
         #!---> parameter in rows, items in columns!
+
+        if self._class_idx != None:
+            didx = [i for i in xrange(data.shape[1]) if i != self._class_idx]
+            self.classes = data[:,self._class_idx]
+            data = data[:,didx]
+            self._labels = self._labels[didx]
+        else:
+            self.classes = np.zeros(data.shape[0])
+        
         self.data = data.T
+        
+        if covorder != 0 and not all(map(lambda i: i in self._covorder, self._labels)):
+            raise ValueError('Covorder needs exactly the same values as found in the colums of the datatfile')
 
         # sorting dat by variance
         variances = np.var(self.data, ddof=1, axis=1)
@@ -180,9 +198,19 @@ Input:
         sortidx = self._sortidx
         pcnum = range(self._fVals.size)
 
+        co = np.zeros(shape=(self.data.shape[1], 4), dtype=float)
+        # not induced and induced
+        co[self.classes == 24] = 1.0, 0.0, 0.0, 0.5
+        co[self.classes == 25] = 1.0, 0.0, 0.0, 0.5
+
+        # not induced and induced
+        co[self.classes == 27] = 0.0, 1.0, 0.0, 0.5
+        co[self.classes == 28] = 0.0, 1.0, 0.0, 0.5
+
+
         if self._portions:
             f, ax = plt.subplots(1, 2, figsize=self._figsize)
-            ax[0].scatter(*self.pca_transform[:2,:])
+            ax[0].scatter(*self.pca_transform[:2,:], c=co)
             ax[0].set_xlim(absmin, absmax)
             ax[0].set_ylim(absmin, absmax)
             ax[0].set_xlabel('PC 1')
@@ -196,7 +224,7 @@ Input:
             ax[1].set_title('Proportion of Variance')
         else:
             f, ax = plt.subplots(1, figsize=self._figsize)
-            ax.scatter(*self.pca_transform[:2,:])
+            ax.scatter(*self.pca_transform[:2,:], c=co)
             ax.set_xlim(absmin, absmax)
             ax.set_ylim(absmin, absmax)
             ax.set_xlabel('PC 1')
@@ -205,7 +233,7 @@ Input:
             arrow_ax = ax
 
         self._draw_arrows(arrow_ax, scale_to)
-        f.canvas.set_window_title('binderfinder PCA {} -- {}'.format(__version__, self._filename))
+        f.canvas.set_window_title('binderfinder PCA {} -- {}'.format(__version__, os.path.split(self._filename)[1]))
         f.tight_layout()
 
         if self._annotate:
@@ -214,17 +242,24 @@ Input:
         if self._covplot:
             n = self.data.shape[0]
             fcp, ax = plt.subplots(n, n, sharex=True, sharey=True)
-            fcp.canvas.set_window_title('binderfinder CovPlot {} -- {}'.format(__version__, self._filename))
+            fcp.canvas.set_window_title('binderfinder CovPlot {} -- {}'.format(__version__, os.path.split(self._filename)[1]))
             fcp.subplots_adjust(hspace=0, wspace=0)
+
+            if self._covorder != []:
+                label_list = list(self._labels)
+                idx = map(lambda k: label_list.index(k), self._covorder)
+                labels = [self._labels[i] for i in idx]
+                data = [self.data[i] for i in idx]
+            else:
+                labels, data = self._labels, self.data
+
             for i in xrange(n):
                 for j in xrange(n):
                     if i == 0:
-                        ax[i, j].set_title(self._labels[j])
+                        ax[i, j].set_title(labels[j])
                     if j == 0:
-                        ax[i, j].set_ylabel(self._labels[i])
-                    ax[i, j].scatter(self.data[j], self.data[i], edgecolor='none', s=1)
-
-
+                        ax[i, j].set_ylabel(labels[i])
+                    ax[i, j].scatter(data[j], data[i], c=co, edgecolor='none', s=1)
 
         plt.show()
 

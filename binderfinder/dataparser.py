@@ -13,7 +13,8 @@ class Parser(object):
     def __init__(self, filename, csv_setup={'delimiter': ';'}):
         self.data_layout = {  self.PROP_KEY: -1,
                               self.PARA_KEY: -1,
-                            self.PARA_LABEL: -1,}
+                            self.PARA_LABEL: -1,
+                            }
 
         header_error_msg = filename + ", Line {}: first two lines of file must be " + "'{};UINT' and '{};UINT'".format(self.PROP_KEY, self.PARA_KEY)
         data_error_msg = filename + ", Line {}: inconsistency while parsing found"
@@ -26,7 +27,7 @@ class Parser(object):
             except InvalidHeader as IH:
                 print IH
                 raise InvalidHeader(header_error_msg.format(reader.line_num))
-            
+
             try:
                 data = self.parse_data(reader)
             except InconsistentData:
@@ -41,15 +42,31 @@ class Parser(object):
 
     def parse_header(self, reader):
         header_lines = []
-        while len(header_lines) < 2:
+        found_prop = False
+        found_para = False
+        line = 'init'
+        while line != '':
             line = reader.next()
             try:
                 if line[0].startswith('#'):
                     continue
                 else:
+                    if line[0].startswith(self.PARA_KEY):
+                        found_para = True
+                    elif line[0].startswith(self.PROP_KEY):
+                        found_prop = True
+                    else:
+                        continue
                     header_lines.append(line)
             except:
-                line = []
+                line = 'invalid'
+
+            if all([found_prop, found_para]):
+                break
+
+        if found_prop == False or found_para == False:
+            raise InvalidHeader
+
         for layout in header_lines:
             # check if header lines is valid
             try:
@@ -68,11 +85,10 @@ class Parser(object):
                         # raise Warning('No labesl defined or labesl dont match parameter count!')
                         labels = ['Parameter_{}'.format(i) for i in xrange(val)]
                     self.data_layout[self.PARA_LABEL] = labels
-
             except ValueError:
                 raise InvalidHeader
         
-        # final testing of header
+        # final testing o'A tutorial on Principal Components Analysis', Lindsay I Smith, 2002f header
         propcount = self.data_layout[self.PROP_KEY]
         paramcount = self.data_layout[self.PARA_KEY]
         if  propcount == 1 or propcount < 0:
