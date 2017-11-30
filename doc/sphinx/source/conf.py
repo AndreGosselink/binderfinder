@@ -19,7 +19,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../../'))
-from binderfinder import __version__
 
 
 # -- General configuration ------------------------------------------------
@@ -62,7 +61,7 @@ author = u'Gosselink A., Werchau N.'
 # built documents.
 #
 # The short X.Y version.
-version = unicode(str(__version__))
+version = 1.52
 # The full version, including alpha/beta/rc tags.
 release = version
 
