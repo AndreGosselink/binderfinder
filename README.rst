@@ -16,6 +16,9 @@ Installation
 ------------
 Install Python and Matplotlib (see Dependencies), download or clone the repositiory, run it with your data. An example with sample data is the binderfinder.py file
 
+Documentation
+-------------
+See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/`_.
 
 Preview
 -------
@@ -24,17 +27,14 @@ Preview
 .. "Preview PCA")
 .. image:: https://pictr.com/images/2017/06/26/ZVuLx.png
 
-
 Disclaimer
 ----------
 As this is a side project, there are no warranties for correctness. Also there are several hacky passages in the source code.
-
 
 Dependencies
 ------------
 - `Python 2.7.x <https://www.python.org/downloads/>`_
 - `Matplotlib <https://matplotlib.org/users/installing.html>`_
-
 
 Licence
 -------
