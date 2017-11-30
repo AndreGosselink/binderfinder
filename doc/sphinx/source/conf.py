@@ -20,7 +20,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../../'))
 
-autodoc_mock_imports = ['matplotlib', 'numpy', 'scipy']
+autodoc_mock_imports = ['matplotlib', 'numpy', 'scipy', 'matplotlib.pyplot']
 
 # -- General configuration ------------------------------------------------
 
