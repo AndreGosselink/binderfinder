@@ -61,7 +61,7 @@ author = u'Gosselink A., Werchau N.'
 # built documents.
 #
 # The short X.Y version.
-version = 1.52
+version = u'1.52'
 # The full version, including alpha/beta/rc tags.
 release = version
 
