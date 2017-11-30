@@ -8,7 +8,7 @@ Teddy Roland (https://github.com/teddyroland/python-biplot/blob/master/biplot.py
 """
 
 import numpy as np
-from matplotlib.mlab import PCA as mlabPCA
+# from matplotlib.mlab import PCA as mlabPCA
 import matplotlib.pyplot as plt
 from dataparser import Parser
 from errors import DeprecatedDependency
@@ -16,7 +16,7 @@ import warnings
 import os
 from misc import covmat
 from . import __version__
-import IPython as ip
+# import IPython as ip
 
 
 class PCA(object):
