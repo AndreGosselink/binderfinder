@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>binderfinder &#8212; binderfinder DEV documentation</title>
+    <title>API Reference &#8212; binderfinder DEV documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -32,10 +32,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">binderfinder DEV documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="binderfinder.html">binderfinder DEV documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -44,92 +41,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="binderfinder">
-<h1>binderfinder<a class="headerlink" href="#binderfinder" title="Permalink to this headline">¶</a></h1>
-<div class="contents local topic" id="index">
-<p class="topic-title first">Index</p>
-<ul class="simple">
-<li><a class="reference internal" href="#examples" id="id2">Examples</a></li>
-<li><a class="reference internal" href="#id1" id="id3">Fileformat</a></li>
-<li><a class="reference internal" href="#evaluation-rgb-mapping" id="id4">Evaluation/RGB mapping</a></li>
-</ul>
-</div>
-<div class="section" id="examples">
-<h2><a class="toc-backref" href="#id2">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<p>The binderfinder employs two main features: PCA analysis and data reduction of multi dimensional data into an RGB Matrix. In both cases the data needs to be pre-processed into a certain csv format, see <span class="xref std std-ref">fileformat</span>. For the mapping of multidimensional data into RGB see <span class="xref std std-ref">evalfunc</span></p>
-<div class="section" id="matrix">
-<h3>Matrix<a class="headerlink" href="#matrix" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./data/iris_dataset/iris.data&#39;</span><span class="p">,</span>
-             <span class="n">annotate</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
-                <span class="n">stats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
-               <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;bg&#39;</span><span class="p">,</span>
-                 <span class="n">ceil</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-            <span class="n">normalize</span><span class="o">=</span><span class="s1">&#39;channels&#39;</span><span class="p">,</span>
-            <span class="n">ch_labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;Rnd&#39;</span><span class="p">,</span> <span class="s1">&#39;Rnd&#39;</span><span class="p">],</span>
-            <span class="p">)</span>
-
-<span class="n">start_binderfinder</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="pca">
-<h3>PCA<a class="headerlink" href="#pca" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">annotate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-             <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-               <span class="n">covplot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-              <span class="n">portions</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-             <span class="p">)</span>
-
-<span class="n">p</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="s1">&#39;./data/mock_data_pca_rnd.csv&#39;</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">covplot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="id1">
-<h2><a class="toc-backref" href="#id3">Fileformat</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>The general fileformat is defined by a header and a data section. The header has the general fromat:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">properties</span><span class="p">;</span><span class="n">n</span>
-<span class="n">parameters</span><span class="p">;</span><span class="n">m</span>
-</pre></div>
-</div>
-<p>where n is the number of properties and m is the number of parameters. With properties, the a-priori known properties of a sample are known. A property of a sample would translate to a gen modification, treatment e.g. The properties are the label of the data or in other terms: properties are those words, numbers and sequences you’d write onto your falcon tube or eppi, describing your sample.</p>
-<p>Leaving us with the parameters m. This is the number of parameters you are measuring. This referres to your number of readouts e.g. channels used in flowcytometry. Optionally the header can have the format:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">properties</span><span class="p">;</span><span class="n">n</span>
-<span class="n">parameters</span><span class="p">;</span><span class="n">ma</span><span class="p">;</span><span class="n">name_1</span><span class="p">;</span><span class="n">name_2</span><span class="p">;</span><span class="o">...</span><span class="p">;</span><span class="n">name_m</span>
-</pre></div>
-</div>
-<p>where name are the description od the measured parameter (e.g. Intensity, weight, velocity,…)</p>
-<p>A file for Matrix Analysis would look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># header</span>
-<span class="n">properties</span><span class="p">;</span><span class="mi">2</span>
-<span class="n">parameters</span><span class="p">;</span><span class="mi">2</span><span class="p">;</span><span class="n">par1</span><span class="p">;</span><span class="n">par2</span>
-<span class="c1"># data</span>
-<span class="n">A</span><span class="p">;</span><span class="n">a</span><span class="p">;</span><span class="mf">2.1</span><span class="p">;</span><span class="mf">0.25</span>
-<span class="n">A</span><span class="p">;</span><span class="n">b</span><span class="p">;</span><span class="mf">2.2</span><span class="p">;</span><span class="mf">0.89</span>
-<span class="n">A</span><span class="p">;</span><span class="n">c</span><span class="p">;</span><span class="mf">2.3</span><span class="p">;</span><span class="mf">0.98</span>
-<span class="n">A</span><span class="p">;</span><span class="n">d</span><span class="p">;</span><span class="mf">2.4</span><span class="p">;</span><span class="mf">0.57</span>
-</pre></div>
-</div>
-<p>Lines starting with an ‘#’ will be ignored. There are two properties defined in the header, thus the first two field in each row are the labels. E.g. in the first data row we would have sample Aa, in the second Ab, Ac,… The following fields are the values, measuerd for the parameter par1, par2,…</p>
-<p>A file for PCA would look like this, showing the iris dataset:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>properties;0
-parameters;4;sepal_length;sepal_width;petal_length;petal_width;class
-5.1;3.5;1.4;0.2;0
-4.9;3.0;1.4;0.2;0
-4.7;3.2;1.3;0.2;0
-4.6;3.1;1.5;0.2;0
-</pre></div>
-</div>
-<p>Properties needs to be ‘0’ for PCA, thus in the data segment, there are only parameters shown.</p>
-</div>
-<div class="section" id="evaluation-rgb-mapping">
-<h2><a class="toc-backref" href="#id4">Evaluation/RGB mapping</a><a class="headerlink" href="#evaluation-rgb-mapping" title="Permalink to this headline">¶</a></h2>
-<p>During Matrix creation, upt to thre functions are called. Those functions are externalized for simple access and can be found in <em>binderfinderevaluate.py</em></p>
-<span class="target" id="module-binderfinder.evaluate"></span></div>
-</div>
-<div class="section" id="api-reference">
+  <div class="section" id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="binderfinder.start_binderfinder">
@@ -372,10 +284,7 @@ scatterplot will be shown.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">binderfinder DEV documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="binderfinder.html">binderfinder DEV documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

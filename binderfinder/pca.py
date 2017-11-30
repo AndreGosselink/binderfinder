@@ -20,21 +20,34 @@ import IPython as ip
 
 
 class PCA(object):
+    """Main class for PCA-Analysis
+
+    Calculates PCA analysis for data from csv file and plots Bi-Plots and Covariances Plots
+    to visualise the data in PCA space
+
+    Parameters
+    ----------
+        filename : path
+            Path to csv file, containing parsable data.
+        centering : {'mean', 'median', 'none'}
+            'mean':
+              Use the mean of all samples in dataspace for centering prior
+              the PCA analysis.
+            'median':
+              Use the median of all samples in dataspace for centering prior
+              the PCA analysis.
+            'none':
+              No centering of the data. CENTER THE DATA YOURSELF! DONT USE UNCENTERED
+              DATA FOR PCA! YOU HAVE BEEN WARNED!
+        normalize : {True, False}
+            Normalize each parameter independently prior PCA.
+        reduce_to : int
+            Number of components the data is reduced to. If `reduce_to=-1` all components are used.
+        annotate : {True, False}
+            Annotate datapoint in scatterplot/biplot. Where 0 is the first data item in the data file.
+        portions : {True, False}
+            Plot portion of variance for each component.
     """
-Input:
-------------------------
-    filename: path to csv file, containing parsable data
-
-    centering: centering data by 'mean', 'median' or 'none' centering at all
-
-    normalize: normalize each parameter independently prior PCA
-
-    reduce_to: number of components the data is reduced to. If -1 all components are used
-
-    annotate: annotate datapoint in scatterplot. where 0 is the first data item in the data file
-
-    portions: plot portion of variance for each component
- """
     
 
     def __init__(self, filename,
@@ -187,6 +200,11 @@ Input:
             print 'all good!'
     
     def show(self):
+        """Show plots.
+        
+        Shows the plots according to parameters given to PCA. At least the PCA space
+        scatterplot will be shown.
+        """
 
         xmin, xmax = map(lambda f: f(self.pca_transform[0,:])*1.3, [np.min, np.max])
         ymin, ymax = map(lambda f: f(self.pca_transform[1,:])*1.3, [np.min, np.max])

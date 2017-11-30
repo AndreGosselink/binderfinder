@@ -4,11 +4,12 @@ import warnings
 from errors import InvalidHeader, InconsistentData, InvalidLabels
 
 
-#TODO relational data model?
+#TODO relational data model? At least Pandas
 class Parser(object):
     PROP_KEY = 'properties'
     PARA_KEY = 'parameters'
     PARA_LABEL = 'labels'
+    _comment_char = '#'
 
     def __init__(self, filename, csv_setup={'delimiter': ';'}):
         self.data_layout = {  self.PROP_KEY: -1,
@@ -21,7 +22,8 @@ class Parser(object):
         incons_error_msg = filename + ", inconistency in level of '{}' while checking found"
 
         with open(filename, 'r') as csv_file:
-            reader = csv.reader(csv_file, **csv_setup)
+            comment_filtered = filter(lambda row: not row.startswith(self._comment_char), csv_file)
+            reader = csv.reader(comment_filtered, **csv_setup)
             try:
                 self.parse_header(reader)
             except InvalidHeader as IH:
