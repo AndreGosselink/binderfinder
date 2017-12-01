@@ -75,9 +75,12 @@ A file for PCA would look like this, showing the iris dataset::
 
 Properties needs to be '0' for PCA, thus in the data segment, there are only parameters shown.
 
-.. _evalfunf:
+.. _evalfunc:
 Evaluation/RGB mapping
 ----------------------
-During Matrix creation, upt to thre functions are called. Those functions are externalized for simple access and can be found in *binderfinder\evaluate.py*
+During Matrix creation, upt to thre functions are called. Those functions are externalized for simple access and can be found in *.\\binderfinder\\evaluate.py*
 
-.. automodule:: binderfinder.evaluate
+.. currentmodule:: binderfinder.evaluate
+.. autofunction:: evaluate
+.. autofunction:: stats_calculation
+.. autofunction:: sort_reduction
