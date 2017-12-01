@@ -2,6 +2,7 @@ Version 1.51 DEV
 -added sorting for covplot
 -removed full pathname from window title, because it prevented saving plots via gui
 -commenting in whole csv file possible
+-commenting automated(?) docs
 
 Version 1.50
 -added covplot
