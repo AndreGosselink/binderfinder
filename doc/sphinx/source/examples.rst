@@ -1,6 +1,6 @@
 Examples
 --------
-The binderfinder employs two main features: PCA analysis and data reduction of multi dimensional data into an RGB Matrix. In both cases the data needs to be pre-processed into a certain csv format, see :ref:`fileformat`. For the mapping of multidimensional data into RGB see :ref:`evalfunc`
+The binderfinder employs two main features: PCA analysis and data reduction of multi dimensional data into an RGB Matrix. In both cases the data needs to be pre-processed into a certain csv format, see :ref:`Fileformat`. For the mapping of multidimensional data into RGB see :ref:`Evaluation/RGB mapping`
 
 Matrix
 """"""
@@ -33,8 +33,6 @@ PCA
     p = PCA('./data/mock_data_pca_rnd.csv', annotate=True, normalize=False, covplot=True)
     p.show()
 
-
-.. _fileformat:
 Fileformat
 ----------
 The general fileformat is defined by a header and a data section. The header has the general fromat::
@@ -75,7 +73,6 @@ A file for PCA would look like this, showing the iris dataset::
 
 Properties needs to be '0' for PCA, thus in the data segment, there are only parameters shown.
 
-.. _evalfunc:
 Evaluation/RGB mapping
 ----------------------
 During Matrix creation, upt to thre functions are called. Those functions are externalized for simple access and can be found in *.\\binderfinder\\evaluate.py*
