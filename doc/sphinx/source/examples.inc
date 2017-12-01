@@ -77,7 +77,6 @@ Evaluation/RGB mapping
 ----------------------
 During Matrix creation, upt to thre functions are called. Those functions are externalized for simple access and can be found in *.\\binderfinder\\evaluate.py*
 
-.. currentmodule:: binderfinder.evaluate
-.. autofunction:: evaluate
-.. autofunction:: stats_calculation
-.. autofunction:: sort_reduction
+.. autofunction:: binderfinder.evaluate.evaluate
+.. autofunction:: binderfinder.evaluate.stats_calculation
+.. autofunction:: binderfinder.evaluate.sort_reduction

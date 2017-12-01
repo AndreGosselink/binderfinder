@@ -1,12 +1,10 @@
 API Reference
 =============
 
-.. currentmodule:: binderfinder
+.. autofunction:: binderfinder.start_binderfinder
 
-.. autofunction:: start_binderfinder
-
-.. autoclass:: Matrix
+.. autoclass:: binderfinder.Matrix
    :members:
 
-.. autoclass:: PCA
+.. autoclass:: binderfinder.PCA
    :members:
