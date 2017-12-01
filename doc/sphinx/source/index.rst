@@ -11,5 +11,5 @@ binderfinder
    :local:
    :backlinks: entry
 
-.. include:: examples
-.. include:: apiref
+.. include:: examples.inc
+.. include:: apiref.inc
