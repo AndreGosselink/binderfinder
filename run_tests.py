@@ -1,4 +1,6 @@
 import pytest
 
-pytest.main(args=['tests'])
+ret = pytest.main(args=['tests'])
 
+if ret != 0:
+    raise Exception('pytest failed!')

@@ -1,21 +1,14 @@
 import numpy as np
+import os
 
 
 def get_params(kw):
-    param_dict = dict(pca_min=dict(filename=r'.\data\mock_data_pca_testcases.csv',
+    param_dict = dict(pca_min=dict(filename=os.path.join('data', 'mock_data_pca_testcases.csv'),
                                    annotate=False,
                                    normalize=True,
                                    covplot=False,
                                    portions=False,
-                                  ),
-                      pca=dict(filename=r'.\data\mock_data_pca_rnd.csv',
-                               annotate=False,
-                               normalize=True,
-                               covplot=False,
-                               portions=False,
-                              )
-                     )
-
+                                  ),)
     return param_dict[kw]
 
 def get_testdata():

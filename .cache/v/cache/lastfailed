@@ -1,1 +1,6 @@
-{}
+{
+  "tests/test_pca.py::TestPCA::()::test_consistency_eigenvals": true, 
+  "tests/test_pca.py::TestPCA::()::test_consistency_eigenvecs": true, 
+  "tests/test_pca.py::TestPCA::()::test_parsing": true, 
+  "tests/test_pca.py::TestPCA::()::test_standard": true
+}
