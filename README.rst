@@ -8,6 +8,11 @@ This project aims to keep it simple and reduce the need of packages to a minimum
    :local:
    :backlinks: entry
 
+Status
+------
+.. | Tests | image:: https://app.codeship.com/projects/a145b180-bbe4-0135-37fd-46dcf572bfca/status?branch=default
+.. | Doku | image:: http://binderfinder.readthedocs.io/en/latest/?badge=latest
+
 Get It
 ------
 The latest, stable release can be downloaded `here <https://bitbucket.org/rikisa/binderfinder/get/release.zip>`_.
@@ -22,10 +27,8 @@ See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/>
 
 Preview
 -------
-.. "Preview Matrix"
-.. image:: https://pictr.com/images/2017/11/28/a175c0bab5f8c0c50fb1dbd58bcbd09e.png
-.. "Preview PCA")
-.. image:: https://pictr.com/images/2017/06/26/ZVuLx.png
+.. | Preview Matrix | image:: https://pictr.com/images/2017/11/28/a175c0bab5f8c0c50fb1dbd58bcbd09e.png
+.. | Preview PCA | image:: https://pictr.com/images/2017/06/26/ZVuLx.png
 
 Disclaimer
 ----------
