@@ -11,7 +11,9 @@ This project aims to keep it simple and reduce the need of packages to a minimum
 Status
 ------
 .. image:: https://app.codeship.com/projects/a145b180-bbe4-0135-37fd-46dcf572bfca/status?branch=default
-.. image:: http://binderfinder.readthedocs.io/en/latest/?badge=latest
+   :alt: run_tests.py
+.. image:: https://readthedocs.org/projects/binderfinder/badge/?version=latest
+   :alt: Documentation
 
 Get It
 ------
@@ -28,7 +30,9 @@ See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/>
 Preview
 -------
 .. image:: https://pictr.com/images/2017/11/28/a175c0bab5f8c0c50fb1dbd58bcbd09e.png
+   :alt: Matrix preview
 .. image:: https://pictr.com/images/2017/06/26/ZVuLx.png
+   :alt: PCA preview
 
 Disclaimer
 ----------
