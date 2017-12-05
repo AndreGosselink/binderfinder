@@ -102,7 +102,8 @@ class PCA(object):
         
         self.data = data.T
         
-        if covorder != 0 and not all(map(lambda i: i in self._covorder, self._labels)):
+        if covorder != [] and not all(map(lambda i: i in self._covorder, self._labels)):
+            print covorder
             raise ValueError('Covorder needs exactly the same values as found in the colums of the datatfile')
 
         # sorting dat by variance
@@ -156,13 +157,8 @@ class PCA(object):
         pca_transform = np.dot(self._fVecs.T, data)
         return pca_transform
 
-    def _get_eigenpairs(self, False):
-        m = self._covMat.shape[0]
-        evals, evecs = np.linalg.eig(self._covMat)
-        # for dup in eigenpairs:
-        #     print '{:> 3.3f} -> ({:})'.format(dup[0], ', '.join(map('{:> 3.3f}'.format, dup[1])))
-        # 
-
+    def _get_eigenpairs(self, covMat):
+        evals, evecs = np.linalg.eig(covMat)
         return evals, evecs.T
 
     def _standardize_data(self, data):
@@ -175,7 +171,7 @@ class PCA(object):
 
         m = data.shape[0]
         offsets = self._offset_func(data)
-        # for broadcasting reasons
+        # for broadcasting reasons -> m x n -- m x 1
         offsets = offsets.reshape(m, 1)
         res = data - offsets
         return res
