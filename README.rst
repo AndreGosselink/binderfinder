@@ -12,7 +12,7 @@ Status
 ------
 .. image:: https://app.codeship.com/projects/a145b180-bbe4-0135-37fd-46dcf572bfca/status?branch=default
    :alt: run_tests.py
-.. image:: https://readthedocs.org/projects/binderfinder/badge/?version=latest
+.. image:: https://readthedocs.org/projects/binderfinder/badge/?version=release
    :alt: Documentation
 
 Get It
@@ -25,7 +25,7 @@ Install Python and Matplotlib (see Dependencies), download or clone the repositi
 
 Documentation
 -------------
-See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/>`_.
+See some mor documentation `here <http://binderfinder.readthedocs.io/en/release/>`_.
 
 Preview
 -------
