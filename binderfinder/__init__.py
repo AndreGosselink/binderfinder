@@ -27,21 +27,27 @@ import matplotlib as mpl
 
 
 def start_binderfinder(defaults):
+    """Starts the binderfinder Matrix.
+    
+    Takes the same Parameters `binderfinder.Matrix` takes. For reference of
+    the parameters please see
+    """
     m = Matrix(**defaults)
     m.show_me_where_the_white_rabbit_goes()
     m.save_last_run()
 
-if not '-noconsole' in sys.argv:
-    
-    try:
-        hg = sub.Popen('hg branch', stdout=sub.PIPE)
-        branch = hg.stdout.read()
-        if not ('default' in branch or 'release' in branch):
+if __name__ == '__main__':
+    if not '-noconsole' in sys.argv:
+        
+        try:
+            hg = sub.Popen('hg branch', stdout=sub.PIPE)
+            branch = hg.stdout.read()
+            if not ('default' in branch or 'release' in branch):
+                branch = ''
+            hg.kill()
+        except:
             branch = ''
-        hg.kill()
-    except:
-        branch = ''
 
-    print 'starting binderfinder ' + __version__  + ' ' + branch
-    print 'using matplotlib ' + mpl.__version__
-    print 'started with pid', os.getpid()
+        print 'starting binderfinder ' + __version__  + ' ' + branch
+        print 'using matplotlib ' + mpl.__version__
+        print 'started with pid', os.getpid()

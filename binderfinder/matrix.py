@@ -21,60 +21,82 @@ import matplotlib.gridspec as gridspec
 
 
 class Matrix(object):
-    """
-Input:
-------------------------
- filename: path to csv file, containing parsable data
+    """Main class for matrix visualisation
 
-reference: refernce values as iterable which are passed to the evaluate
-           function (default=[0.0, 0.0])
+    Evaluates a csv file containing arbitary values measured for any given
+    combination of up to two subtypes. Evaluation is done by mapping the parameters
+    to the RGB space.
 
-   weight: weights as iterable which are passed to the evaluate function
-           (default=[1.0, 1.0])
+    Parameters
+    ----------
+    filename : path
+        path to csv file, containing parsable data
+    reference : iterable
+        reference values as iterable which are passed to the evaluate function.
+    weight : iterable
+        weights as iterable which are passed to the evaluate function.
+    annotate : {'none', 'data', 'all'}
+        'none':
+          Tiles in Matrix are not labeled.
+        'data':
+          Only tiles referencing to datapoints from the inputfile are labeled.
+        'all':
+          Data and statistics tiles are labeled. Additionally the used RGB values
+          are shown in the tiles.
+    stats : {True, False}
+        Show per row/col statistics. The calculations are defined in
+        elvaluate.py/stats_calculation().
+    sort : {'none', 'row', 'col', 'both'}
+        'none':
+          No sorting. For sorting `stats` needs to be True
+        'row':
+          Sort matrix according to row statistics.
+        'col':
+          Sort matrix according to column statistics.
+        'both':
+          First sort by row statistics and afterwards by column statistics
+    legend : {'rb', 'br', 'rg', 'gr', 'gb', 'bg'}
+        Defines the legend behaviour. Needs to be a string of two chars,
+        the chars need to be 'r', 'g' or 'b'. The first char defines the
+        color plotted along the x-axis, the second char defines the
+        color along the y-axis (default='bg').
+    ceil : {True, False}
+        Round the values for the matrix. The scalar data is categorized
+        in decades, changing the readout to 0-10 %, 11-20 %, 21-30 %,
+        and so on. Reduces the dynamic range and as a leads to a loss
+        of information but increase of comparability.
+    normalize : {'total', 'channels'}
+        'total':
+          All channels are normalized by the overal, maximum value in the
+          matrix.
+        'channels':
+          Each channel is normalized the maximum value in the respective
+          channel.
+    ch_lablels : list of strings
+        Name displayed for the RGB channels
 
- annotate: specifies how the matrix is labled. If 'none' the tiles in the
-           matrix aren't labels at all, if 'data' only the tile representing
-           data are labeled and if 'all' the data and statistics tiles are
-           labeld. The labels show the used RGB values per row and per
-           col (default='none').
+    Notes
+    -----
+    The csv file needs to have the following layout:
 
-    stats: Show per row/col statistics. The calculations are defined in
-           elvaluate.py/stats_calculation() (default=False).
+        +------------+-+---+-+-------+-+-------+ 
+        | properties |;| n | |       | |       | 
+        +------------+-+---+-+-------+-+-------+ 
+        |  parameter |;| m | |       | |       | 
+        +------------+-+---+-+-------+-+-------+ 
+        |      A     |;| x |;| v0_Ax |;| v1_Ax |
+        +------------+-+---+-+-------+-+-------+ 
+        |      A     |;| y |;| v0_Ay |;| v1_Ay |
+        +------------+-+---+-+-------+-+-------+ 
+        |      A     |;| x |;| v0_Bx |;| v1_Bx |
+        +------------+-+---+-+-------+-+-------+ 
+        |      A     |;| y |;| v0_By |;| v1_By |
+        +------------+-+---+-+-------+-+-------+ 
 
-     sort: Defines the sorting behaviour. Can be sorted by 'row', 'col' or
-           'both' or can be not sorted at all with 'none'. In order for
-           sorting to work, stats needs to be True (default='none').
-
-   legend: Defines the legend behaviour. Needs to be a string of two chars,
-           the chars need to be 'r', 'g' or 'b'. The first char defines the
-           color plotted along the x-axis, the second char defines the
-           color along the y-axis (default='bg').
-
-     ceil: Round the values for the matrix. The scalar data is categorized
-           in decades, changing the readout to 0-10 %, 11-20 %, 21-30 %,
-           and so on. Reduces the dynamic range and as a leads to a loss
-           of information but increase of comparability.
-
-normalize: normalizes the data prior the representation. if 'total' all
-           channels are normalized by the overal, maximum value in the
-           matrix. If 'channels', each channel is normalized the maximum
-           value in the respective channel.
-
-Evaluates a csv file containing arbitary values measured for any given
-combination of up to two subtypes. The csv file needs to have the following
-layout:
-    
-    properties;n
-    parameter;m
-    A;x;v0_Ax;v1_Ax
-    A;y;v0_Ay;v1_Ay
-    B;x;v0_Bx;v1_Bx
-    B;y;v0_By;v1_By
-
-where A and B are the maintypes, x and y are the subtypes with the respective
-measured valus v0 and v1 for each kombination of A, B and x, y. Of course
-subtype and maintype are interchangeable, as long as the data is formated
-as described.
+    where A and B are the maintypes, x and y are the subtypes with the respective
+    measured valus v0 and v1 for each kombination of A, B and x, y. Of course
+    subtype and maintype are interchangeable, as long as the data is formated
+    as described.
     """
 
     def __init__(self, filename, reference=[0.0, 0.0], weights=[1.0, 1.0],
@@ -331,6 +353,13 @@ as described.
         self.fig.canvas.draw()
 
     def save_last_run(self):
+        """Saves the calculated Matrix and transfomration
+
+        Saves the matrix as png image and the transformed
+        data at csv file. The files are written into the
+        directory of the data csv file used for the Matrix
+        calculation.
+        """
         if not self._doneflag:
             warnings.warn('run() was not called before. Next time please call run() first (and double check the output)')
             self.run()
@@ -463,6 +492,16 @@ as described.
                 self._sort_row(-1)
 
     def run(self, show=False):
+        """Runs the transformation and the Matrix creation.
+
+        Parameters
+        ----------
+            show : {True, False}
+              True:
+                Plot and show the matrix directly after computation.
+              False:
+                Only calculate, but do not plot the matrix
+        """
         self._evaluate()
         self._normalize()
 

@@ -1,8 +1,8 @@
 from binderfinder import start_binderfinder
 
 
-# defaults = { 'filename': './data/mock_data_rnd.csv',
-defaults = { 'filename': './data/iris_dataset/iris.data',
+# defaults = { 'filename': './data/iris_dataset/iris.data',
+defaults = { 'filename': './data/mock_data_rnd.csv',
             'reference': [100, 100],
               'weights': [1.0, 1.0],
              'annotate': 'none',
