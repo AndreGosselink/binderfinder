@@ -25,7 +25,7 @@ Install Python and Matplotlib (see Dependencies), download or clone the repositi
 
 Documentation
 -------------
-See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/>`_.
+See some more documentation `here <http://binderfinder.readthedocs.io/en/latest/>`_.
 
 Preview
 -------
