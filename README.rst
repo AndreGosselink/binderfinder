@@ -17,7 +17,7 @@ Status
 
 Get It
 ------
-The latest, stable release can be downloaded `here <https://bitbucket.org/rikisa/binderfinder/get/release.zip>`_.
+The latest, stable release can be downloaded `here <https://github.com/AndreGosselink/binderfinder/archive/master.zip>`_.
 
 Installation
 ------------
@@ -25,7 +25,7 @@ Install Python and Matplotlib (see Dependencies), download or clone the repositi
 
 Documentation
 -------------
-See some mor documentation `here <http://binderfinder.readthedocs.io/en/release/>`_.
+See some mor documentation `here <http://binderfinder.readthedocs.io/en/latest/>`_.
 
 Preview
 -------
